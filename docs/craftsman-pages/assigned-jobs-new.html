@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Artisanal Portal - My Jobs</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#d0bcff",
+                        "surface": "#f9f9ff",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "primary-container": "#8455ef",
+                        "on-background": "#151c27",
+                        "on-secondary-fixed": "#002113",
+                        "inverse-on-surface": "#ebf1ff",
+                        "surface-container-high": "#e2e8f8",
+                        "primary-fixed": "#e9ddff",
+                        "on-primary-fixed": "#23005c",
+                        "on-secondary-fixed-variant": "#005236",
+                        "tertiary": "#b61722",
+                        "surface-container": "#e7eefe",
+                        "outline-variant": "#cbc3d7",
+                        "on-tertiary-container": "#fffbff",
+                        "primary-fixed-dim": "#d0bcff",
+                        "tertiary-container": "#da3437",
+                        "surface-bright": "#f9f9ff",
+                        "surface-container-highest": "#dce2f3",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#fffbff",
+                        "background": "#f9f9ff",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-container-low": "#f0f3ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary": "#6b38d4",
+                        "outline": "#7b7486",
+                        "on-primary-fixed-variant": "#5516be",
+                        "surface-variant": "#dce2f3",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#006c49",
+                        "surface-dim": "#d3daea",
+                        "inverse-surface": "#2a313d",
+                        "on-surface": "#151c27",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#00714d",
+                        "on-tertiary-fixed": "#410004",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#6d3bd7",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-surface-variant": "#494454"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .brand { font-family: 'Manrope', sans-serif; }
+        .glass-badge { backdrop-filter: blur(8px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { min-height: max(884px, 100dvh); }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen pb-24">
+    <!-- TopAppBar -->
+    <header class="bg-[#f9f9ff]/70 dark:bg-slate-950/70 backdrop-blur-xl docked full-width top-0 sticky z-50 shadow-[0px_12px_32px_rgba(21,28,39,0.06)]">
+        <div class="flex justify-between items-center w-full px-6 py-4 mx-auto max-w-full">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-[#6b38d4] dark:text-[#8455ef]">menu</span>
+                <span class="font-manrope text-xl font-extrabold text-[#6b38d4] dark:text-[#8455ef]">Artisanal Portal</span>
+            </div>
+            <button onclick="logout()" class="font-manrope font-semibold tracking-tight text-[#6b38d4] dark:text-[#8455ef] hover:bg-slate-100/50 transition-colors active:scale-95 duration-200 px-3 py-1 rounded-lg">
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <main class="w-full mx-auto px-4 mt-6 max-w-md md:max-w-3xl lg:max-w-7xl">
+        <!-- Header Section -->
+        <div class="flex flex-col gap-1 mb-8">
+            <h1 class="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-on-surface font-headline">My Assigned Jobs</h1>
+            <div class="flex items-center gap-2">
+                <span class="bg-primary-container text-on-primary-container px-3 py-0.5 rounded-full text-xs font-bold font-label" id="total-jobs-badge">Total Jobs: 0</span>
+            </div>
+        </div>
+
+        <!-- Horizontal Scrollable Tabs -->
+        <div class="flex gap-4 overflow-x-auto no-scrollbar mb-8 pb-2">
+            <button onclick="filterByStatus('all')" class="flex-shrink-0 text-sm font-bold text-[#6b38d4] border-b-2 border-[#6b38d4] pb-1 status-tab" data-status="all">
+                All Jobs
+            </button>
+            <button onclick="filterByStatus('Assigned')" class="flex-shrink-0 text-sm font-medium text-slate-400 pb-1 status-tab" data-status="Assigned">
+                Assigned
+            </button>
+            <button onclick="filterByStatus('InProgress')" class="flex-shrink-0 text-sm font-medium text-slate-400 pb-1 status-tab" data-status="InProgress">
+                In Progress
+            </button>
+            <button onclick="filterByStatus('Completed')" class="flex-shrink-0 text-sm font-medium text-slate-400 pb-1 status-tab" data-status="Completed">
+                Completed
+            </button>
+        </div>
+
+        <!-- Jobs Container - Responsive Grid -->
+        <div id="jobs-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Jobs will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden bg-surface-container-lowest rounded-xl shadow-[0px_12px_32px_rgba(21,28,39,0.06)] p-12 text-center">
+            <span class="material-symbols-outlined text-6xl text-slate-300">inventory_2</span>
+            <p class="text-slate-500 mt-4 text-lg font-semibold">No jobs assigned yet</p>
+        </div>
+    </main>
+
+    <!-- BottomNavBar -->
+    <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 z-50 rounded-t-xl shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <a class="flex flex-col items-center justify-center bg-[#8455ef]/10 text-[#6b38d4] dark:text-[#8455ef] rounded-xl px-4 py-1 scale-100 active:scale-90 transition-all" href="#">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">handyman</span>
+            <span class="font-inter text-[10px] font-medium">Jobs</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-[#6b38d4] transition-all" href="#">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <span class="font-inter text-[10px] font-medium">Schedule</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-[#6b38d4] transition-all" href="#">
+            <span class="material-symbols-outlined">inventory_2</span>
+            <span class="font-inter text-[10px] font-medium">Stock</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-[#6b38d4] transition-all" href="#" onclick="logout()">
+            <span class="material-symbols-outlined">person</span>
+            <span class="font-inter text-[10px] font-medium">Profile</span>
+        </a>
+    </nav>
+
+    <script src="../js/config.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let allJobs = [];
+        let carouselIntervals = {};
+        
+        // Authentication
+        const token = localStorage.getItem('jmw_token') || localStorage.getItem('craftsmanToken');
+        const jmwUser = localStorage.getItem('jmw_user');
+        let workerInfo = {};
+        
+        if (jmwUser) {
+            const userData = JSON.parse(jmwUser);
+            workerInfo = {
+                id: userData.id,
+                name: userData.name,
+                mobile: userData.mobile
+            };
+        } else {
+            workerInfo = {
+                id: localStorage.getItem('craftsmanId'),
+                name: localStorage.getItem('craftsmanName'),
+                mobile: localStorage.getItem('craftsmanMobile')
+            };
+        }
+
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/CraftWorkflow/worker/${workerInfo.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load jobs');
+
+                allJobs = await response.json();
+                document.getElementById('total-jobs-badge').textContent = `Total Jobs: ${allJobs.length}`;
+                renderJobs();
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                alert('Failed to load jobs');
+            }
+        }
+
+        function renderJobs() {
+            const filtered = currentFilter === 'all' ? allJobs : allJobs.filter(j => j.status === currentFilter);
+            const container = document.getElementById('jobs-container');
+            const emptyState = document.getElementById('empty-state');
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            container.innerHTML = filtered.map((job, index) => {
+                const img1 = job.designImage || job.DesignImage || '';
+                const img2 = job.designImage2 || job.DesignImage2 || '';
+                const img3 = job.designImage3 || job.DesignImage3 || '';
+                const images = [img1, img2, img3].filter(img => img && img !== 'null' && img !== '');
+                const hasImages = images.length > 0;
+                
+                return `
+                <div class="bg-surface-container-lowest rounded-xl shadow-[0px_12px_32px_rgba(21,28,39,0.06)] overflow-hidden">
+                    <!-- Card Hero Image Carousel -->
+                    ${hasImages ? `
+                    <div class="relative h-64 w-full group">
+                        <!-- Carousel Container -->
+                        <div class="flex w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth" id="imageCarousel-${job.id}">
+                            ${images.map((img, idx) => `
+                                <div class="min-w-full h-full snap-center">
+                                    <img alt="Design ${idx + 1}" 
+                                         class="w-full h-full object-cover cursor-pointer" 
+                                         src="${img}"
+                                         onclick="openImageZoom(${job.id}, ${idx}, ${JSON.stringify(images).replace(/"/g, '&quot;')})"
+                                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23111827%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%239ca3af%27 font-family=%27sans-serif%27 font-size=%2718%27 dy=%2710.5%27 font-weight=%27bold%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27%3EImage Not Available%3C/text%3E%3C/svg%3E';">
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <div class="absolute top-4 right-4 z-10">
+                            <span class="glass-badge ${getStatusBadgeClass(job.status)} px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">
+                                ${job.status}
+                            </span>
+                        </div>
+                        
+                        <!-- Carousel Indicators -->
+                        ${images.length > 1 ? `
+                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10" id="indicators-${job.id}">
+                            ${images.map((_, idx) => `
+                                <div class="carousel-dot-${job.id} w-2 h-2 rounded-full bg-white shadow-sm ${idx === 0 ? 'opacity-100' : 'opacity-40'} transition-opacity duration-300"></div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="p-6 space-y-8">
+                        <!-- Primary Header -->
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="text-2xl font-bold font-headline text-on-surface">${job.jewelryType}</h2>
+                                <p class="text-sm font-medium text-outline">Order #${job.orderId}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold font-headline text-[#6b38d4]">${job.grossWeight || job.rawGoldGiven || 0}g</p>
+                                <p class="text-xs font-medium text-slate-400">${new Date(job.assignedDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short'})}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Detail Sections -->
+                        <div class="space-y-6">
+                            <!-- Shop Info -->
+                            <section>
+                                <h3 class="text-xs font-bold text-outline uppercase tracking-wider mb-2 font-label">Shop</h3>
+                                <div class="bg-surface-container-low p-4 rounded-lg flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-[#6b38d4]">store</span>
+                                    <span class="font-semibold text-on-surface">T.N. Mani Gopi Jewellers</span>
+                                </div>
+                            </section>
+                            
+                            <!-- Order Specifications -->
+                            <section>
+                                <h3 class="text-xs font-bold text-outline uppercase tracking-wider mb-2 font-label">Order Specifications</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-surface-container p-3 rounded-lg">
+                                        <p class="text-[10px] text-on-surface-variant font-medium">Type</p>
+                                        <p class="font-bold text-sm">${job.jewelryType}</p>
+                                    </div>
+                                    <div class="bg-surface-container p-3 rounded-lg">
+                                        <p class="text-[10px] text-on-surface-variant font-medium">Metal</p>
+                                        <p class="font-bold text-sm">${job.metalType || 'Gold'}</p>
+                                    </div>
+                                    ${job.purity ? `
+                                    <div class="bg-surface-container p-3 rounded-lg">
+                                        <p class="text-[10px] text-on-surface-variant font-medium">Purity</p>
+                                        <p class="font-bold text-sm">${job.purity}</p>
+                                    </div>
+                                    ` : ''}
+                                    <div class="bg-surface-container p-3 rounded-lg">
+                                        <p class="text-[10px] text-on-surface-variant font-medium">Weight</p>
+                                        <p class="font-bold text-sm">${job.grossWeight || job.rawGoldGiven || 0}g</p>
+                                    </div>
+                                </div>
+                            </section>
+                            
+                            <!-- Materials Given -->
+                            <section>
+                                <h3 class="text-xs font-bold text-outline uppercase tracking-wider mb-2 font-label">Materials Given by Shop</h3>
+                                <div class="bg-surface-container-low rounded-xl overflow-hidden">
+                                    ${job.materialDetails && job.materialDetails.length > 0 ? 
+                                        job.materialDetails.map((m, idx) => `
+                                        <div class="flex items-center justify-between p-4 ${idx < job.materialDetails.length - 1 ? 'border-b border-outline-variant/15' : ''}">
+                                            <div class="flex items-center gap-3">
+                                                <span class="material-symbols-outlined text-on-surface-variant text-sm">square_foot</span>
+                                                <span class="text-sm font-medium">${m.materialType}: ${m.description}</span>
+                                            </div>
+                                            <span class="font-manrope font-bold text-sm">${m.weight}${m.unit || 'g'}</span>
+                                        </div>
+                                        `).join('')
+                                        : `
+                                        <div class="flex items-center justify-between p-4">
+                                            <div class="flex items-center gap-3">
+                                                <span class="material-symbols-outlined text-on-surface-variant text-sm">square_foot</span>
+                                                <span class="text-sm font-medium">Raw Gold</span>
+                                            </div>
+                                            <span class="font-manrope font-bold text-sm">${job.rawGoldGiven || 0}g</span>
+                                        </div>
+                                        `
+                                    }
+                                    ${(job.stoneGiven || (job.stoneDetails && job.stoneDetails.length > 0)) ? `
+                                        <div class="flex items-center justify-between p-4 border-t border-outline-variant/15">
+                                            <div class="flex items-center gap-3">
+                                                <span class="material-symbols-outlined text-tertiary text-sm">diamond</span>
+                                                <span class="text-sm font-medium">Stones Given</span>
+                                            </div>
+                                            <span class="font-manrope font-bold text-sm">Yes</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </section>
+                        </div>
+                        
+                        <!-- Primary Actions -->
+                        <div class="grid grid-cols-1 gap-3 pt-4">
+                            <button onclick="viewOrderDetails(${job.orderId})" class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-4 rounded-full font-headline font-bold text-lg shadow-[0px_8px_16px_rgba(107,56,212,0.2)] active:scale-95 transition-transform">
+                                View Order
+                            </button>
+                            ${job.status === 'Assigned' ? `
+                                <button onclick="showStartWorkModal(${job.id})" class="w-full bg-secondary-container text-on-secondary-container py-4 rounded-full font-headline font-bold text-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined">play_arrow</span>
+                                    Start Work
+                                </button>
+                            ` : ''}
+                            ${job.status === 'InProgress' ? `
+                                <button onclick="showCompleteWorkModal(${job.id})" class="w-full bg-secondary-container text-on-secondary-container py-4 rounded-full font-headline font-bold text-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined">task_alt</span>
+                                    Complete Work
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                `}).join('');
+
+            // Initialize carousels
+            filtered.forEach((job, index) => {
+                const img1 = job.designImage || job.DesignImage || '';
+                const img2 = job.designImage2 || job.DesignImage2 || '';
+                const img3 = job.designImage3 || job.DesignImage3 || '';
+                const images = [img1, img2, img3].filter(img => img && img !== 'null' && img !== '');
+                
+                if (images.length > 1) {
+                    initCarousel(job.id);
+                }
+            });
+        }
+
+        function getStatusBadgeClass(status) {
+            const classes = {
+                'Assigned': 'bg-primary-container/80 text-white',
+                'InProgress': 'bg-blue-500/80 text-white',
+                'Completed': 'bg-green-500/80 text-white'
+            };
+            return classes[status] || 'bg-gray-500/80 text-white';
+        }
+
+        function initCarousel(jobId) {
+            const carousel = document.getElementById(`imageCarousel-${jobId}`);
+            if (!carousel) return;
+            
+            const dots = document.querySelectorAll(`.carousel-dot-${jobId}`);
+            
+            carousel.addEventListener('scroll', () => {
+                const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+                dots.forEach((dot, i) => {
+                    dot.style.opacity = i === index ? '1' : '0.4';
+                });
+            });
+        }
+
+        function filterByStatus(status) {
+            currentFilter = status;
+            
+            // Update tab styles
+            document.querySelectorAll('.status-tab').forEach(btn => {
+                if (btn.dataset.status === status) {
+                    btn.className = 'flex-shrink-0 text-sm font-bold text-[#6b38d4] border-b-2 border-[#6b38d4] pb-1 status-tab';
+                } else {
+                    btn.className = 'flex-shrink-0 text-sm font-medium text-slate-400 pb-1 status-tab';
+                }
+            });
+            
+            renderJobs();
+        }
+
+        function openImageZoom(jobId, startIndex, images) {
+            // Implement zoom modal (simplified for now)
+            window.open(images[startIndex], '_blank');
+        }
+
+        function viewOrderDetails(orderId) {
+            // Redirect to order details or open modal
+            alert(`Viewing order #${orderId}`);
+        }
+
+        function showStartWorkModal(assignmentId) {
+            alert('Start Work feature coming soon');
+        }
+
+        function showCompleteWorkModal(assignmentId) {
+            alert('Complete Work feature coming soon');
+        }
+
+        function logout() {
+            localStorage.removeItem('jmw_token');
+            localStorage.removeItem('jmw_user');
+            localStorage.removeItem('craftsmanToken');
+            localStorage.removeItem('craftsmanId');
+            localStorage.removeItem('craftsmanName');
+            localStorage.removeItem('craftsmanMobile');
+            window.location.href = '../index.html';
+        }
+
+        // Check auth and load
+        if (!token || !workerInfo.id) {
+            window.location.href = '../index.html';
+        } else {
+            loadJobs();
+        }
+    </script>
+</body>
+</html>

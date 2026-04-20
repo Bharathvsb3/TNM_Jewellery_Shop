@@ -1,0 +1,403 @@
+<style>
+/* ===== PREMIUM PROFILE PAGE - NOIR & GOLD ===== */
+.profile-wrap {
+    max-width: 800px; margin: 0 auto;
+    animation: pageIn 0.6s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes pageIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+/* Page Hero */
+.page-hero {
+    background: linear-gradient(135deg, #1a0a00, #3a1f00 60%, #5a3000);
+    border-radius: 18px; padding: 28px 28px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 24px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 10px 32px rgba(0,0,0,0.12);
+}
+@keyframes cardReveal { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+.page-hero::after {
+    content: '◆'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    font-size: 80px; color: rgba(212,175,55,0.08); pointer-events: none;
+}
+.profile-avatar-ring {
+    position: relative; flex-shrink: 0;
+}
+.profile-avatar-ring::before {
+    content: ''; position: absolute; inset: -4px;
+    border-radius: 50%; border: 2px solid rgba(212,175,55,0.6);
+    animation: ringPulse 2s ease-in-out infinite;
+}
+@keyframes ringPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
+    50%      { box-shadow: 0 0 0 8px rgba(212,175,55,0); }
+}
+.profile-avatar-xl {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: linear-gradient(135deg, #D4AF37, #B8941F);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif', serif;
+    font-size: 34px; font-weight: 700; color: #1a0a00;
+    position: relative; z-index: 1;
+}
+.profile-hero-info { position: relative; z-index: 1; }
+.profile-hero-name {
+    font-family: 'Noto Serif', serif; font-size: clamp(22px,4vw,32px);
+    font-weight: 700; color: #fff; margin-bottom: 4px;
+}
+.profile-hero-role {
+    font-size: 13px; color: rgba(255,255,255,0.6);
+    text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+}
+.profile-hero-role::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; background: #22c55e;
+    display: inline-block; animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+.profile-hero-since { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 8px; }
+
+/* Cards */
+.profile-card {
+    background: #fff; border-radius: 20px; padding: 32px;
+    margin-bottom: 20px; border: 1px solid rgba(212,175,55,0.12);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease;
+    animation: cardReveal 0.5s ease backwards;
+}
+.profile-card:nth-child(3) { animation-delay: 0.1s; }
+.profile-card:nth-child(4) { animation-delay: 0.2s; }
+.profile-card:nth-child(5) { animation-delay: 0.3s; }
+.profile-card:hover { box-shadow: 0 8px 32px rgba(212,175,55,0.12); }
+
+.card-title {
+    font-family: 'Noto Serif', serif; font-size: 18px; font-weight: 700;
+    color: var(--text-dark); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 14px; border-bottom: 1px solid rgba(212,175,55,0.15);
+}
+.card-title .material-symbols-outlined { color: var(--gold-primary); font-size: 22px; }
+
+/* Info items */
+.info-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+.info-item {
+    padding: 16px 18px; background: var(--light-bg);
+    border-radius: 12px; border-left: 3px solid rgba(212,175,55,0.4);
+    transition: all 0.3s ease;
+}
+.info-item:hover { border-left-color: var(--gold-primary); background: rgba(212,175,55,0.05); }
+.info-item label {
+    display: block; font-size: 11px; font-weight: 700;
+    color: var(--text-light); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+}
+.info-item p { font-size: 15px; color: var(--text-dark); font-weight: 600; }
+
+/* Form inputs */
+.form-group { margin-bottom: 20px; }
+.form-group label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--text-dark); margin-bottom: 8px;
+}
+.form-input {
+    width: 100%; padding: 13px 16px;
+    border: 2px solid var(--border-light);
+    border-radius: 12px; font-size: 15px;
+    font-family: 'Manrope', sans-serif;
+    transition: all 0.3s ease; background: #fff;
+    color: var(--text-dark);
+}
+.form-input:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 4px rgba(212,175,55,0.1); }
+.form-input:disabled { background: var(--light-bg); cursor: not-allowed; color: var(--text-light); }
+
+/* Buttons */
+.btn-gold {
+    padding: 13px 28px;
+    background: linear-gradient(135deg, #D4AF37, #B8941F);
+    color: #1a0a00; border: none; border-radius: 50px;
+    font-size: 15px; font-weight: 700;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer; transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(212,175,55,0.3);
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,175,55,0.45); }
+.btn-gold:active { transform: translateY(0); }
+.btn-gold:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-danger {
+    padding: 13px 28px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff; border: none; border-radius: 50px;
+    font-size: 15px; font-weight: 700;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer; transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(239,68,68,0.25);
+    display: inline-flex; align-items: center; gap: 8px; width: 100%;
+    justify-content: center;
+}
+.btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(239,68,68,0.4); }
+
+/* Alert messages */
+.alert-msg {
+    padding: 12px 16px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; margin-bottom: 18px;
+    display: none; align-items: center; gap: 8px;
+    animation: fadeInMsg 0.3s ease;
+}
+@keyframes fadeInMsg { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+.alert-msg.show { display: flex; }
+.alert-msg.success { background: #D1FAE5; color: #065F46; border-left: 4px solid #10B981; }
+.alert-msg.error   { background: #FEE2E2; color: #991B1B; border-left: 4px solid #EF4444; }
+.alert-msg .material-symbols-outlined { font-size: 18px; flex-shrink: 0; }
+
+/* Shop card */
+.shop-mini-card {
+    background: linear-gradient(135deg, #1a0a00, #3a1f00);
+    border-radius: 16px; padding: 24px;
+    display: flex; align-items: center; gap: 20px;
+}
+.shop-mini-logo {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg,#D4AF37,#B8941F);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+}
+.shop-mini-logo img { width: 100%; height: 100%; object-fit: cover; }
+.shop-mini-name { font-family: 'Noto Serif', serif; font-size: 18px; color: #D4AF37; font-weight: 700; margin-bottom: 4px; }
+.shop-mini-sub { font-size: 12px; color: rgba(255,255,255,0.55); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-hero { flex-direction: column; text-align: center; padding: 24px 20px; gap: 16px; }
+    .page-hero::after { display: none; }
+    .profile-hero-role { justify-content: center; }
+    .profile-avatar-xl { width: 72px; height: 72px; font-size: 28px; }
+    .info-grid { grid-template-columns: 1fr; gap: 10px; }
+    .profile-card { padding: 20px 18px; border-radius: 16px; }
+    .card-title { font-size: 16px; margin-bottom: 16px; }
+    .shop-mini-card { flex-direction: column; text-align: center; padding: 20px; gap: 14px; }
+}
+@media (max-width: 480px) {
+    .profile-wrap { max-width: 100%; }
+}
+</style>
+
+<div class="profile-wrap">
+    <!-- Profile Hero -->
+    <div class="page-hero">
+        <div class="profile-avatar-ring">
+            <div class="profile-avatar-xl" id="profileAvatar">C</div>
+        </div>
+        <div class="profile-hero-info">
+            <div class="profile-hero-name" id="profileName">Customer</div>
+            <div class="profile-hero-role">Customer Account</div>
+            <div class="profile-hero-since" id="profileSince">Member since —</div>
+        </div>
+    </div>
+
+    <!-- Account Info Card -->
+    <div class="profile-card">
+        <h3 class="card-title">
+            <span class="material-symbols-outlined">account_circle</span>
+            Account Information
+        </h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Full Name</label>
+                <p id="infoName">—</p>
+            </div>
+            <div class="info-item">
+                <label>Mobile Number</label>
+                <p id="infoMobile">—</p>
+            </div>
+            <div class="info-item">
+                <label>Address</label>
+                <p id="infoAddress">—</p>
+            </div>
+            <div class="info-item">
+                <label>Member Since</label>
+                <p id="infoCreatedAt">—</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Info Card -->
+    <div class="profile-card">
+        <h3 class="card-title">
+            <span class="material-symbols-outlined">store</span>
+            Your Jeweller
+        </h3>
+        <div class="shop-mini-card">
+            <div class="shop-mini-logo">
+                <img id="shopMiniLogo" src="https://via.placeholder.com/56x56/D4AF37/FFFFFF.png?text=JMW" alt="Shop Logo">
+            </div>
+            <div>
+                <div class="shop-mini-name" id="shopMiniName">T.N. Mani Gopi Jewellers</div>
+                <div class="shop-mini-sub" id="shopMiniContact">Coimbatore, Tamil Nadu</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="profile-card">
+        <h3 class="card-title">
+            <span class="material-symbols-outlined">lock</span>
+            Change Password
+        </h3>
+        <div id="passwordSuccess" class="alert-msg success">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span id="successText">Password changed successfully!</span>
+        </div>
+        <div id="passwordError" class="alert-msg error">
+            <span class="material-symbols-outlined">error</span>
+            <span id="errorText">An error occurred.</span>
+        </div>
+        <form id="changePasswordForm">
+            <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" class="form-input" placeholder="Enter current password" required>
+            </div>
+            <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" class="form-input" placeholder="Enter new password (min 6 chars)" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm New Password</label>
+                <input type="password" id="confirmPassword" class="form-input" placeholder="Repeat new password" required minlength="6">
+            </div>
+            <button type="submit" class="btn-gold" id="changePassBtn">
+                <span class="material-symbols-outlined">key</span>
+                Update Password
+            </button>
+        </form>
+    </div>
+
+    <!-- Logout -->
+    <div class="profile-card">
+        <h3 class="card-title">
+            <span class="material-symbols-outlined">logout</span>
+            Account Actions
+        </h3>
+        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px;">
+            Securely sign out of your customer account.
+        </p>
+        <button onclick="logoutFromProfile()" class="btn-danger">
+            <span class="material-symbols-outlined">logout</span>
+            Logout from Account
+        </button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const token = getAuthToken();
+    const user  = getCurrentUser();
+
+    // Populate shop details from config
+    if (typeof SHOP_CONFIG !== 'undefined') {
+        const img = document.getElementById('shopMiniLogo');
+        if (img) img.src = SHOP_CONFIG.logo;
+        const nameEl = document.getElementById('shopMiniName');
+        if (nameEl) nameEl.textContent = SHOP_CONFIG.name;
+        const contactEl = document.getElementById('shopMiniContact');
+        if (contactEl && SHOP_CONFIG.address) {
+            contactEl.textContent = `${SHOP_CONFIG.address.line2} · ${SHOP_CONFIG.address.phone}`;
+        }
+    }
+
+    async function loadProfile() {
+        try {
+            const resp = await fetch(API.AUTH.PROFILE, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (resp.ok) {
+                const data = await resp.json();
+                displayProfile(data);
+            } else {
+                displayProfileFromStorage();
+            }
+        } catch (e) {
+            displayProfileFromStorage();
+        }
+    }
+
+    function displayProfile(u) {
+        const initials = (u.name || 'C').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileName').textContent = u.name || '—';
+        document.getElementById('infoName').textContent = u.name || '—';
+        document.getElementById('infoMobile').textContent = u.mobile || '—';
+        document.getElementById('infoAddress').textContent = u.address || 'Not provided';
+        const since = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' }) : '—';
+        document.getElementById('infoCreatedAt').textContent = since;
+        document.getElementById('profileSince').textContent = `Member since ${since}`;
+    }
+
+    function displayProfileFromStorage() {
+        const name   = user?.name   || localStorage.getItem('customerName') || 'Customer';
+        const mobile = user?.mobile || localStorage.getItem('customerMobile') || '—';
+        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileName').textContent = name;
+        document.getElementById('infoName').textContent = name;
+        document.getElementById('infoMobile').textContent = mobile;
+        document.getElementById('infoAddress').textContent = '—';
+        document.getElementById('infoCreatedAt').textContent = '—';
+        document.getElementById('profileSince').textContent = 'Member';
+    }
+
+    // Password change
+    document.getElementById('changePasswordForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const curr = document.getElementById('currentPassword').value;
+        const newP = document.getElementById('newPassword').value;
+        const conf = document.getElementById('confirmPassword').value;
+        const btn  = document.getElementById('changePassBtn');
+
+        document.getElementById('passwordSuccess').classList.remove('show');
+        document.getElementById('passwordError').classList.remove('show');
+
+        if (newP !== conf) { showMsg('error', 'New passwords do not match.'); return; }
+        if (newP.length < 6) { showMsg('error', 'Password must be at least 6 characters.'); return; }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined">sync</span> Updating...';
+
+        try {
+            const resp = await fetch(`${API_BASE_URL}/auth/change-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ oldPassword: curr, newPassword: newP })
+            });
+            if (resp.ok) {
+                showMsg('success', 'Password changed successfully!');
+                document.getElementById('changePasswordForm').reset();
+            } else {
+                const err = await resp.json().catch(() => ({}));
+                showMsg('error', err.message || 'Failed to change password. Check your current password.');
+            }
+        } catch(ex) {
+            showMsg('error', 'Unable to change password. Please try again.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined">key</span> Update Password';
+        }
+    });
+
+    function showMsg(type, text) {
+        const el = document.getElementById(type === 'success' ? 'passwordSuccess' : 'passwordError');
+        const textEl = document.getElementById(type === 'success' ? 'successText' : 'errorText');
+        if(textEl) textEl.textContent = text;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 5000);
+    }
+
+    window.logoutFromProfile = function() {
+        if (confirm('Are you sure you want to logout?')) logout();
+    };
+
+    loadProfile();
+
+    window.addEventListener('pageLoaded', ev => { if (ev.detail?.route === 'profile') loadProfile(); });
+})();
+</script>

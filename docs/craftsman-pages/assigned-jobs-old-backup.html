@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assigned Jobs - Craftsman Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        body { min-height: 100vh; }
+        
+        /* Header Scroll Animation */
+        .page-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .page-header.header-hidden {
+            transform: translateY(-100%);
+        }
+        
+        .page-header.header-visible {
+            transform: translateY(0);
+        }
+
+        /* Image Carousel */
+        .carousel-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-image {
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .carousel-dot {
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background: #6b38d4;
+            width: 2rem;
+        }
+
+        /* Zoom Modal */
+        .zoom-modal {
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.95);
+        }
+
+        .zoom-image {
+            transition: transform 0.3s ease;
+            cursor: zoom-in;
+        }
+
+        .zoom-image.zoomed {
+            cursor: zoom-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto p-4 md:p-6">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6 page-header" id="page-header">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-purple-600 text-3xl">work</span>
+                        My Assigned Jobs
+                    </h1>
+                    <p class="text-gray-600 mt-2 font-medium" id="worker-name">Loading...</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right bg-purple-50 px-4 py-3 rounded-lg border border-purple-200">
+                        <p class="text-xs text-purple-600 font-semibold">Total Jobs</p>
+                        <p class="text-3xl font-bold text-purple-600" id="total-jobs">0</p>
+                    </div>
+                    <button onclick="logout()" class="px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold flex items-center gap-2 transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-lg">logout</span>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Filters -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-4 mb-6">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="filterByStatus('all')" class="px-5 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold status-filter transition-colors" data-status="all">
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">work</span>
+                    All Jobs
+                </button>
+                <button onclick="filterByStatus('Assigned')" class="px-5 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold status-filter transition-colors" data-status="Assigned">
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">schedule</span>
+                    Assigned
+                </button>
+                <button onclick="filterByStatus('InProgress')" class="px-5 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold status-filter transition-colors" data-status="InProgress">
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">pending</span>
+                    In Progress
+                </button>
+                <button onclick="filterByStatus('Completed')" class="px-5 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold status-filter transition-colors" data-status="Completed">
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">check_circle</span>
+                    Completed
+                </button>
+            </div>
+        </div>
+
+        <!-- Jobs List -->
+        <div id="jobs-container" class="space-y-4">
+            <!-- Jobs will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden bg-white rounded-lg shadow-md p-12 text-center">
+            <span class="material-symbols-outlined text-6xl text-gray-300">inventory_2</span>
+            <p class="text-gray-500 mt-4 text-lg">No jobs assigned yet</p>
+        </div>
+    </div>
+
+    <!-- Start Work Modal -->
+    <div id="start-work-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-green-600">play_circle</span>
+                Start Working
+            </h2>
+            <form id="start-work-form" onsubmit="submitStartWork(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Initial Remarks (Optional)</label>
+                    <textarea 
+                        id="start-remarks" 
+                        rows="3" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                        placeholder="Any initial notes or observations..."
+                    ></textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="hideStartWorkModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        Start Work
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="order-details-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-6 sticky top-0">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined">receipt_long</span>
+                        Order Details
+                    </h2>
+                    <button onclick="hideOrderDetailsModal()" class="text-white hover:bg-white/20 rounded-full p-2">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            </div>
+            <div id="order-details-content" class="p-6">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Work Modal -->
+    <div id="complete-work-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">task_alt</span>
+                Complete Work
+            </h2>
+            <form id="complete-work-form" onsubmit="submitCompleteWork(event)">
+                <!-- Materials Given Summary -->
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                    <h3 class="font-bold text-sm mb-2 text-purple-900">Materials Given to You:</h3>
+                    <div id="materials-summary" class="space-y-1 text-sm">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-purple-300">
+                        <p class="font-bold text-purple-900">Total Weight Given: <span id="total-given-weight">0</span>g</p>
+                    </div>
+                </div>
+
+                <!-- Final Product Weight -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Final Product Weight (grams) *
+                    </label>
+                    <input 
+                        type="number" 
+                        id="final-weight" 
+                        step="0.001" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter final product weight"
+                        required
+                        oninput="calculateReturn()"
+                    >
+                </div>
+
+                <!-- System Calculated Return -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h3 class="font-bold text-sm mb-2 text-blue-900">System Calculation:</h3>
+                    <p class="text-sm text-gray-700">Used Material: <span id="calc-used" class="font-bold">0.000</span>g</p>
+                    <p class="text-sm text-gray-700 mt-1">Expected Return: <span id="calc-return" class="font-bold text-blue-600">0.000</span>g</p>
+                </div>
+
+                <!-- Actual Return Weight -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Actual Return Weight (grams)
+                    </label>
+                    <input 
+                        type="number" 
+                        id="actual-return" 
+                        step="0.001" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter actual weight you're returning"
+                        oninput="showDifference()"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Leave blank if returning exact calculated amount</p>
+                </div>
+
+                <!-- Difference Warning -->
+                <div id="difference-warning" class="hidden mb-4 bg-orange-50 border-2 border-orange-400 rounded-lg p-4">
+                    <p class="font-bold text-orange-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined">warning</span>
+                        Return Difference Detected
+                    </p>
+                    <p class="text-sm text-orange-800 mt-2">
+                        Difference: <span id="difference-amount" class="font-bold">0.000</span>g
+                    </p>
+                    <p class="text-xs text-orange-700 mt-1">This will be flagged for admin approval due to wastage/loss/gain.</p>
+                </div>
+
+                <!-- Completion Remarks -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Completion Remarks</label>
+                    <textarea 
+                        id="completion-remarks" 
+                        rows="3" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Any notes about the completed work..."
+                    ></textarea>
+                </div>
+
+                <!-- Return Remarks -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Return Remarks</label>
+                    <textarea 
+                        id="return-remarks" 
+                        rows="2" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Explain reason for any material difference..."
+                    ></textarea>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="hideCompleteWorkModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Complete Work
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Zoom Modal -->
+    <div id="image-zoom-modal" class="fixed inset-0 zoom-modal z-50 hidden items-center justify-center">
+        <div class="relative w-full h-full flex items-center justify-center">
+            <!-- Close Button -->
+            <button onclick="closeImageZoom()" class="absolute top-6 right-6 z-50 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-3 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+
+            <!-- Zoom Controls -->
+            <div class="absolute top-6 left-6 z-50 flex gap-2">
+                <button onclick="zoomIn()" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-3 rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-xl">zoom_in</span>
+                </button>
+                <button onclick="zoomOut()" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-3 rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-xl">zoom_out</span>
+                </button>
+                <button onclick="resetZoom()" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-4 py-3 rounded-full transition-colors text-sm font-semibold">
+                    Reset
+                </button>
+            </div>
+
+            <!-- Image Counter -->
+            <div class="absolute top-6 left-1/2 transform -translate-x-1/2 z-50 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-semibold">
+                <span id="zoom-image-counter">1 / 3</span>
+            </div>
+
+            <!-- Navigation Arrows -->
+            <button onclick="previousImage()" class="absolute left-6 z-50 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-4 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-3xl">chevron_left</span>
+            </button>
+            <button onclick="nextImage()" class="absolute right-6 z-50 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-4 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-3xl">chevron_right</span>
+            </button>
+
+            <!-- Zoomable Image -->
+            <div class="flex items-center justify-center w-full h-full p-8" id="zoom-image-container">
+                <img id="zoom-image" src="" alt="Design Image" class="zoom-image max-w-full max-h-full object-contain" onclick="toggleZoom()">
+            </div>
+
+            <!-- Thumbnail Navigation -->
+            <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex gap-3" id="zoom-thumbnails">
+                <!-- Thumbnails will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let allJobs = [];
+        let currentAssignmentId = null;
+        let currentAssignment = null;
+        
+        // Support both storage schemes (unified login and craftsman login)
+        const token = localStorage.getItem('jmw_token') || localStorage.getItem('craftsmanToken');
+        const jmwUser = localStorage.getItem('jmw_user');
+        let workerInfo = {};
+        
+        if (jmwUser) {
+            // Parse from unified login
+            const userData = JSON.parse(jmwUser);
+            workerInfo = {
+                id: userData.id,
+                name: userData.name,
+                mobile: userData.mobile
+            };
+        } else {
+            // Use craftsman-specific storage
+            workerInfo = {
+                id: localStorage.getItem('craftsmanId'),
+                name: localStorage.getItem('craftsmanName'),
+                mobile: localStorage.getItem('craftsmanMobile')
+            };
+        }
+
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/CraftWorkflow/worker/${workerInfo.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load jobs');
+
+                allJobs = await response.json();
+                document.getElementById('worker-name').textContent = `Welcome, ${workerInfo.name}`;
+                document.getElementById('total-jobs').textContent = allJobs.length;
+                
+                renderJobs();
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                alert('Failed to load jobs');
+            }
+        }
+        
+        // Auto-hide header on scroll for mobile
+        let lastScrollTop = 0;
+        let ticking = false;
+        const pageHeader = document.getElementById('page-header');
+        
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    handleHeaderScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+        
+        function handleHeaderScroll() {
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Only hide header on mobile/tablet
+            if (window.innerWidth < 1024) {
+                if (currentScroll > lastScrollTop && currentScroll > 100) {
+                    // Scrolling down - hide header
+                    pageHeader.classList.add('header-hidden');
+                    pageHeader.classList.remove('header-visible');
+                } else {
+                    // Scrolling up - show header
+                    pageHeader.classList.remove('header-hidden');
+                    pageHeader.classList.add('header-visible');
+                }
+            } else {
+                // Always show header on desktop
+                pageHeader.classList.remove('header-hidden');
+                pageHeader.classList.add('header-visible');
+            }
+            
+            lastScrollTop = Math.max(0, currentScroll);
+        }
+            
+
+        function renderJobs() {
+            const filtered = currentFilter === 'all' 
+                ? allJobs 
+                : allJobs.filter(j => j.status === currentFilter);
+
+            const container = document.getElementById('jobs-container');
+            const emptyState = document.getElementById('empty-state');
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            container.innerHTML = filtered.map(job => {
+                const img1 = job.designImage || job.DesignImage || '';
+                const img2 = job.designImage2 || job.DesignImage2 || '';
+                const img3 = job.designImage3 || job.DesignImage3 || '';
+                const hasImages = img1 || img2 || img3;
+                
+                return `
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden job-card cursor-pointer hover:shadow-xl hover:border-purple-300 transition-all" 
+                     data-status="${job.status}" 
+                     data-job-id="${job.id}"
+                     onclick="toggleJobDetails(${job.id})">
+                    
+                    <!-- Simple Card View (Always Visible) -->
+                    <div class="p-5 md:p-6">
+                        <!-- Header with Status and Quick Action -->
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-1">${job.jewelryType}</h3>
+                                <p class="text-sm text-gray-500">Order #${job.orderId}</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-3 py-1.5 rounded-full text-xs font-bold ${getStatusClass(job.status)}">
+                                    ${job.status}
+                                </span>
+                                ${job.status === 'Assigned' ? `
+                                    <button onclick="event.stopPropagation(); showStartWorkModal(${job.id})" 
+                                            class="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors" 
+                                            title="Start Work">
+                                        <span class="material-symbols-outlined text-sm">play_circle</span>
+                                    </button>
+                                ` : ''}
+                                ${job.status === 'InProgress' ? `
+                                    <button onclick="event.stopPropagation(); showCompleteWorkModal(${job.id})" 
+                                            class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors" 
+                                            title="Complete Work">
+                                        <span class="material-symbols-outlined text-sm">task_alt</span>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Quick Info Grid -->
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Metal</p>
+                                <p class="text-base font-bold text-gray-900">${job.metalType || 'Gold'}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Weight</p>
+                                <p class="text-base font-bold text-gray-900">${job.grossWeight || job.rawGoldGiven || 0}g</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Date</p>
+                                <p class="text-base font-bold text-gray-900">${new Date(job.assignedDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short'})}</p>
+                            </div>
+                        </div>
+
+                        <!-- Expand Indicator -->
+                        <div class="flex items-center justify-center gap-2 text-purple-600 font-semibold pt-3 border-t border-gray-200">
+                            <span class="text-sm">View Details</span>
+                            <span class="material-symbols-outlined text-lg expand-icon-${job.id}">expand_more</span>
+                        </div>
+                    </div>
+
+                    <!-- Detailed View (Hidden by default) -->
+                    <div id="job-details-${job.id}" class="hidden border-t border-gray-200 bg-gray-50">
+                        <!-- Design Images Carousel (if available) -->
+                        ${hasImages ? `
+                            <div class="relative carousel-container h-64 bg-gray-900" id="carousel-${job.id}">
+                                ${img1 ? `
+                                    <img src="${img1}" 
+                                         alt="Design 1" 
+                                         class="carousel-image w-full h-full object-cover absolute inset-0 cursor-pointer"
+                                         data-index="0"
+                                         onclick="event.stopPropagation(); openImageZoom(${job.id}, 0, ['${img1}', '${img2}', '${img3}'])"
+                                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23111827%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%239ca3af%27 font-family=%27sans-serif%27 font-size=%2718%27 dy=%2710.5%27 font-weight=%27bold%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27%3EImage Not Available%3C/text%3E%3C/svg%3E';">
+                                ` : ''}
+                                ${img2 ? `
+                                    <img src="${img2}" 
+                                         alt="Design 2" 
+                                         class="carousel-image w-full h-full object-cover absolute inset-0 opacity-0 cursor-pointer"
+                                         data-index="1"
+                                         onclick="event.stopPropagation(); openImageZoom(${job.id}, 1, ['${img1}', '${img2}', '${img3}'])"
+                                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23111827%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%239ca3af%27 font-family=%27sans-serif%27 font-size=%2718%27 dy=%2710.5%27 font-weight=%27bold%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27%3EImage Not Available%3C/text%3E%3C/svg%3E';">
+                                ` : ''}
+                                ${img3 ? `
+                                    <img src="${img3}" 
+                                         alt="Design 3" 
+                                         class="carousel-image w-full h-full object-cover absolute inset-0 opacity-0 cursor-pointer"
+                                         data-index="2"
+                                         onclick="event.stopPropagation(); openImageZoom(${job.id}, 2, ['${img1}', '${img2}', '${img3}'])"
+                                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23111827%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%239ca3af%27 font-family=%27sans-serif%27 font-size=%2718%27 dy=%2710.5%27 font-weight=%27bold%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27%3EImage Not Available%3C/text%3E%3C/svg%3E';">
+                                ` : ''}
+                                
+                                <!-- Status Badge Overlay -->
+                                <div class="absolute top-4 right-4 z-10">
+                                    <span class="px-3 py-1.5 rounded-full text-xs font-bold ${getStatusClass(job.status)} backdrop-blur-md bg-opacity-90">
+                                        ${job.status}
+                                    </span>
+                                </div>
+
+                                <!-- Play/Pause Button -->
+                                <button class="absolute top-4 left-4 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors" 
+                                        onclick="event.stopPropagation(); toggleCarousel(${job.id})">
+                                    <span class="material-symbols-outlined text-lg" id="carousel-control-${job.id}">pause</span>
+                                </button>
+
+                                <!-- Navigation Dots -->
+                                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+                                    ${img1 ? `<div class="carousel-dot active w-8 h-2 bg-white rounded-full" data-carousel="${job.id}" data-index="0" onclick="event.stopPropagation(); goToSlide(${job.id}, 0)"></div>` : ''}
+                                    ${img2 ? `<div class="carousel-dot w-2 h-2 bg-white/50 rounded-full" data-carousel="${job.id}" data-index="1" onclick="event.stopPropagation(); goToSlide(${job.id}, 1)"></div>` : ''}
+                                    ${img3 ? `<div class="carousel-dot w-2 h-2 bg-white/50 rounded-full" data-carousel="${job.id}" data-index="2" onclick="event.stopPropagation(); goToSlide(${job.id}, 2)"></div>` : ''}
+                                </div>
+
+                                <!-- Click to View Text -->
+                                <div class="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-10">
+                                    <span class="bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm">zoom_in</span>
+                                        Click to view full size
+                                    </span>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="p-4 md:p-6">
+                            <!-- Shop & Timeline Info -->
+                            <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-4">
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p class="text-blue-900 font-bold mb-1">
+                                            <span class="material-symbols-outlined text-sm align-middle">store</span>
+                                            Shop
+                                        </p>
+                                        <p class="text-gray-800 font-semibold">T.N. Mani Gopi Jewellers</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-blue-900 font-bold mb-1">
+                                            <span class="material-symbols-outlined text-sm align-middle">calendar_today</span>
+                                            Assigned Date
+                                        </p>
+                                        <p class="text-gray-800 font-semibold">${new Date(job.assignedDate).toLocaleDateString('en-IN')}</p>
+                                    </div>
+                                    ${job.expectedCompletionDate ? `
+                                        <div class="col-span-2">
+                                            <p class="text-blue-900 font-bold mb-1">
+                                                <span class="material-symbols-outlined text-sm align-middle">event</span>
+                                                Expected Completion
+                                            </p>
+                                            <p class="text-gray-800 font-semibold">${new Date(job.expectedCompletionDate).toLocaleDateString('en-IN')}</p>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Order Specifications -->
+                            <div class="bg-purple-50 rounded-lg p-4 mb-4">
+                                <h4 class="font-bold text-sm text-purple-900 mb-3 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">article</span>
+                                    Order Specifications
+                                </h4>
+                                <div class="grid grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                        <p class="text-gray-600">Type:</p>
+                                        <p class="font-semibold text-gray-800">${job.jewelryType}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600">Metal:</p>
+                                        <p class="font-semibold text-gray-800">${job.metalType || 'Gold'}</p>
+                                    </div>
+                                    ${job.purity ? `
+                                        <div>
+                                            <p class="text-gray-600">Purity:</p>
+                                            <p class="font-semibold text-gray-800">${job.purity}</p>
+                                        </div>
+                                    ` : ''}
+                                    ${job.grossWeight ? `
+                                        <div>
+                                            <p class="text-gray-600">Gross Weight:</p>
+                                            <p class="font-semibold text-gray-800">${job.grossWeight}g</p>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Materials Given from Shop -->
+                            <div class="bg-green-50 rounded-lg p-4 mb-4">
+                                <h4 class="font-bold text-sm text-green-900 mb-3 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">inventory</span>
+                                    Materials Given by Shop
+                                </h4>
+                                ${job.materialDetails && job.materialDetails.length > 0 ? `
+                                    <div class="space-y-2">
+                                        ${job.materialDetails.map(m => `
+                                            <div class="flex justify-between items-center bg-white p-3 rounded">
+                                                <span class="font-semibold text-gray-800">${m.materialType}: ${m.description}</span>
+                                                <span class="font-bold text-green-700">${m.weight}${m.unit || 'g'}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : `
+                                    <div class="flex justify-between items-center bg-white p-3 rounded">
+                                        <span class="font-semibold text-gray-800">Raw Gold</span>
+                                        <span class="font-bold text-green-700">${job.rawGoldGiven || 0}g</span>
+                                    </div>
+                                `}
+                                
+                                ${job.stoneGiven || (job.stoneDetails && job.stoneDetails.length > 0) ? `
+                                    <div class="mt-3 pt-3 border-t border-green-300">
+                                        <h5 class="font-bold text-xs text-green-800 mb-2">
+                                            <span class="material-symbols-outlined text-sm align-middle">diamond</span>
+                                            Stones/Gems
+                                        </h5>
+                                        ${job.stoneDetails && job.stoneDetails.length > 0 ? 
+                                            job.stoneDetails.map(s => `
+                                                <div class="bg-white p-2 rounded mb-2 text-sm">
+                                                    <p><strong>${s.stoneType}</strong> - ${s.quantity} pcs</p>
+                                                </div>
+                                            `).join('') 
+                                            : `<p class="text-sm text-gray-700">${job.stoneGiven}</p>`
+                                        }
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex gap-2" onclick="event.stopPropagation()">
+                                <button onclick="viewOrderDetails(${job.orderId})" class="flex-1 bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2 font-semibold">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                    View Order
+                                </button>
+                                ${job.status === 'Assigned' ? `
+                                    <button onclick="showStartWorkModal(${job.id})" class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 font-semibold">
+                                        <span class="material-symbols-outlined">play_circle</span>
+                                        Start Work
+                                    </button>
+                                ` : ''}
+                                ${job.status === 'InProgress' ? `
+                                    <button onclick="showCompleteWorkModal(${job.id})" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 font-semibold">
+                                        <span class="material-symbols-outlined">task_alt</span>
+                                        Complete Work
+                                    </button>
+                                ` : ''}
+                                ${job.status === 'Completed' ? `
+                                    <div class="flex-1 text-center py-3 px-4 bg-green-50 text-green-700 rounded-lg border-2 border-green-200">
+                                        <span class="material-symbols-outlined align-middle">check_circle</span>
+                                        <span class="font-semibold">Completed</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            ${job.finalWeight ? `
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <h5 class="font-bold text-sm text-gray-700 mb-2">Completion Details:</h5>
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="text-gray-600">Final Weight:</p>
+                                            <p class="font-bold text-green-600">${job.finalWeight}g</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600">Return Weight:</p>
+                                            <p class="font-bold text-blue-600">${job.actualReturnWeight || job.systemCalculatedReturn || 0}g</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Toggle job details
+        function toggleJobDetails(jobId) {
+            const detailsDiv = document.getElementById(`job-details-${jobId}`);
+            const expandIcon = document.querySelector(`.expand-icon-${jobId}`);
+            
+            if (detailsDiv.classList.contains('hidden')) {
+                // Close all other open details
+                document.querySelectorAll('[id^="job-details-"]').forEach(div => {
+                    div.classList.add('hidden');
+                });
+                document.querySelectorAll('[class*="expand-icon-"]').forEach(icon => {
+                    icon.textContent = 'expand_more';
+                });
+                
+                // Open this one
+                detailsDiv.classList.remove('hidden');
+                expandIcon.textContent = 'expand_less';
+            } else {
+                // Close this one
+                detailsDiv.classList.add('hidden');
+                expandIcon.textContent = 'expand_more';
+            }
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'Assigned': 'bg-yellow-100 text-yellow-800',
+                'InProgress': 'bg-blue-100 text-blue-800',
+                'Completed': 'bg-green-100 text-green-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function filterByStatus(status) {
+            currentFilter = status;
+            document.querySelectorAll('.status-filter').forEach(btn => {
+                if (btn.dataset.status === status) {
+                    btn.className = 'px-5 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold status-filter transition-colors';
+                } else {
+                    btn.className = 'px-5 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold status-filter transition-colors';
+                }
+            });
+            renderJobs();
+        }
+
+        function showStartWorkModal(assignmentId) {
+            currentAssignmentId = assignmentId;
+            document.getElementById('start-work-modal').classList.remove('hidden');
+            document.getElementById('start-work-modal').classList.add('flex');
+        }
+
+        function hideStartWorkModal() {
+            document.getElementById('start-work-modal').classList.add('hidden');
+            document.getElementById('start-work-modal').classList.remove('flex');
+            document.getElementById('start-work-form').reset();
+        }
+
+        async function submitStartWork(e) {
+            e.preventDefault();
+            
+            const remarks = document.getElementById('start-remarks').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/CraftWorkflow/${currentAssignmentId}/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ initialRemarks: remarks })
+                });
+
+                if (!response.ok) throw new Error('Failed to start work');
+
+                alert('✅ Work started successfully!');
+                hideStartWorkModal();
+                await loadJobs();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Failed to start work');
+            }
+        }
+
+        async function showCompleteWorkModal(assignmentId) {
+            currentAssignmentId = assignmentId;
+            currentAssignment = allJobs.find(j => j.id === assignmentId);
+            
+            // Populate materials summary
+            const materialsSummary = document.getElementById('materials-summary');
+            let totalGiven = 0;
+
+            if (currentAssignment.materialDetails && currentAssignment.materialDetails.length > 0) {
+                materialsSummary.innerHTML = currentAssignment.materialDetails.map(m => {
+                    totalGiven += m.weight;
+                    return `<p>• ${m.materialType}: ${m.description} - ${m.weight}${m.unit || 'g'}</p>`;
+                }).join('');
+            } else {
+                totalGiven = currentAssignment.rawGoldGiven;
+                materialsSummary.innerHTML = `<p>• Raw Gold - ${totalGiven}g</p>`;
+            }
+
+            document.getElementById('total-given-weight').textContent = totalGiven.toFixed(3);
+            
+            document.getElementById('complete-work-modal').classList.remove('hidden');
+            document.getElementById('complete-work-modal').classList.add('flex');
+        }
+
+        function hideCompleteWorkModal() {
+            document.getElementById('complete-work-modal').classList.add('hidden');
+            document.getElementById('complete-work-modal').classList.remove('flex');
+            document.getElementById('complete-work-form').reset();
+            document.getElementById('difference-warning').classList.add('hidden');
+        }
+
+        function calculateReturn() {
+            const totalGiven = parseFloat(document.getElementById('total-given-weight').textContent);
+            const finalWeight = parseFloat(document.getElementById('final-weight').value) || 0;
+            
+            const used = finalWeight;
+            const returnWeight = totalGiven - finalWeight;
+
+            document.getElementById('calc-used').textContent = used.toFixed(3);
+            document.getElementById('calc-return').textContent = returnWeight.toFixed(3);
+        }
+
+        function showDifference() {
+            const systemReturn = parseFloat(document.getElementById('calc-return').textContent);
+            const actualReturn = parseFloat(document.getElementById('actual-return').value);
+            
+            if (actualReturn && !isNaN(actualReturn)) {
+                const difference = systemReturn - actualReturn;
+                
+                if (Math.abs(difference) > 0.001) {
+                    document.getElementById('difference-warning').classList.remove('hidden');
+                    document.getElementById('difference-amount').textContent = Math.abs(difference).toFixed(3);
+                } else {
+                    document.getElementById('difference-warning').classList.add('hidden');
+                }
+            } else {
+                document.getElementById('difference-warning').classList.add('hidden');
+            }
+        }
+
+        async function submitCompleteWork(e) {
+            e.preventDefault();
+            
+            const finalWeight = parseFloat(document.getElementById('final-weight').value);
+            const actualReturn = parseFloat(document.getElementById('actual-return').value) || null;
+            const completionRemarks = document.getElementById('completion-remarks').value;
+            const returnRemarks = document.getElementById('return-remarks').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/CraftWorkflow/${currentAssignmentId}/complete-work`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        finalWeight,
+                        actualReturnWeight: actualReturn,
+                        completionRemarks,
+                        returnRemarks
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to complete work');
+
+                const result = await response.json();
+                
+                let message = '✅ Work completed successfully!\n\n';
+                message += `Final Weight: ${result.finalWeight}g\n`;
+                message += `System Expected Return: ${result.systemCalculatedReturn}g\n`;
+                
+                if (result.actualReturnWeight) {
+                    message += `Actual Return: ${result.actualReturnWeight}g\n`;
+                    if (result.returnDifference && Math.abs(result.returnDifference) > 0.001) {
+                        message += `\n⚠️ Difference of ${Math.abs(result.returnDifference).toFixed(3)}g has been flagged for admin approval.`;
+                    }
+                }
+
+                alert(message);
+                hideCompleteWorkModal();
+                await loadJobs();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Failed to complete work');
+            }
+        }
+
+        // View Order Details
+        async function viewOrderDetails(orderId) {
+            console.log('viewOrderDetails called with orderId:', orderId);
+            try {
+                console.log('Fetching order details...');
+                // Fetch order details
+                const orderResponse = await fetch(`${API_BASE_URL}/Orders/${orderId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!orderResponse.ok) throw new Error('Failed to fetch order');
+                const order = await orderResponse.json();
+
+                // Fetch current gold rate
+                let gold24K = 0;
+                let gold22K = 0;
+                let silver = 0;
+                try {
+                    const rateResponse = await fetch(`${API_BASE_URL}/GoldRates/latest`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    if (rateResponse.ok) {
+                        const rateData = await rateResponse.json();
+                        gold24K = rateData.gold24KRate || rateData.Gold24KRate || 0;
+                        gold22K = rateData.gold916Rate || rateData.Gold916Rate || 0;
+                        silver = rateData.silverRate || rateData.SilverRate || 0;
+                    }
+                } catch (e) {
+                    console.error('Error fetching gold rate:', e);
+                }
+
+                // Calculate temporary amount
+                let tempAmount = 0;
+                const weightToUse = order.grossWeight || order.estimatedWeight || 0;
+                if (weightToUse && weightToUse > 0) {
+                    let ratePerGram = 0;
+                    
+                    // Determine rate based on metal type and purity
+                    if (order.metalType === 'Gold') {
+                        if (order.purity === '999' || order.purity === '24K') {
+                            ratePerGram = gold24K;
+                        } else if (order.purity === '916' || order.purity === '22K') {
+                            ratePerGram = gold22K;
+                        } else {
+                            ratePerGram = gold22K; // Default to 22K
+                        }
+                    } else if (order.metalType === 'Silver') {
+                        ratePerGram = silver;
+                    }
+                    
+                    if (ratePerGram > 0) {
+                        // Calculate with wastage
+                        const totalWeight = (parseFloat(weightToUse) || 0) + (parseFloat(order.wastage) || 0);
+                        const metalCost = ratePerGram * totalWeight;
+                        const subtotal = metalCost + (order.makingCharges || 0);
+                        
+                        if (order.gst) {
+                            const gstAmount = (subtotal * order.gst) / 100;
+                            tempAmount = subtotal + gstAmount;
+                        } else {
+                            tempAmount = subtotal;
+                        }
+                    }
+                }
+
+                // Display order details
+                const content = document.getElementById('order-details-content');
+                content.innerHTML = `
+                    <div class="space-y-6">
+                        <!-- Order Header -->
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border-2 border-purple-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-purple-900">Order #${order.id}</h3>
+                                    <p class="text-purple-700 mt-1">${order.customerName}</p>
+                                </div>
+                                <span class="px-4 py-2 rounded-full text-sm font-bold ${order.status === 'Completed' ? 'bg-green-100 text-green-800' : order.status === 'InProgress' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}">
+                                    ${order.status}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="text-purple-600 font-semibold">Order Date:</p>
+                                    <p class="text-gray-800">${new Date(order.orderDate).toLocaleDateString('en-IN')}</p>
+                                </div>
+                                ${order.completionDate ? `
+                                    <div>
+                                        <p class="text-purple-600 font-semibold">Completion Date:</p>
+                                        <p class="text-gray-800">${new Date(order.completionDate).toLocaleDateString('en-IN')}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Order Specifications -->
+                        <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                            <h4 class="font-bold text-blue-900 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined">description</span>
+                                Order Specifications
+                            </h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-gray-600 text-sm">Jewelry Type:</p>
+                                    <p class="font-bold text-gray-900">${order.jewelryType}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 text-sm">Category:</p>
+                                    <p class="font-bold text-gray-900">${order.category}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 text-sm">Metal Type:</p>
+                                    <p class="font-bold text-gray-900">${order.metalType}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 text-sm">Purity:</p>
+                                    <p class="font-bold text-gray-900">${order.purity}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weight Details -->
+                        <div class="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+                            <h4 class="font-bold text-yellow-900 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined">scale</span>
+                                Weight Details
+                            </h4>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <p class="text-gray-600 text-sm">Gross Weight:</p>
+                                    <p class="font-bold text-gray-900 text-lg">${order.grossWeight}g</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 text-sm">Wastage:</p>
+                                    <p class="font-bold text-gray-900 text-lg">${order.wastage}g</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 text-sm">Estimated Weight:</p>
+                                    <p class="font-bold text-gray-900 text-lg">${order.estimatedWeight}g</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${order.stoneDetails ? `
+                            <div class="bg-pink-50 rounded-lg p-6 border border-pink-200">
+                                <h4 class="font-bold text-pink-900 mb-2 flex items-center gap-2">
+                                    <span class="material-symbols-outlined">diamond</span>
+                                    Stone Details
+                                </h4>
+                                <p class="text-gray-700">${order.stoneDetails}</p>
+                            </div>
+                        ` : ''}
+
+                        <!-- Temporary Cost Calculation -->
+                        ${currentGoldRate > 0 ? `
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg p-6 border-2 border-green-300">
+                                <h4 class="font-bold text-green-900 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined">payments</span>
+                                    Temporary Cost Estimate (Based on Current Rate)
+                                </h4>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-700">Current Gold Rate (24K):</span>
+                                        <span class="font-bold text-gray-900">₹${currentGoldRate.toLocaleString('en-IN')}/g</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-700">Purity Factor (${order.purity}):</span>
+                                        <span class="font-bold text-gray-900">${(order.purity === '916' ? '0.916' : order.purity === '750' ? '0.750' : order.purity === '585' ? '0.585' : '0.999')}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-700">Estimated Weight:</span>
+                                        <span class="font-bold text-gray-900">${order.estimatedWeight}g</span>
+                                    </div>
+                                    ${order.makingCharges > 0 ? `
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-gray-700">Making Charges:</span>
+                                            <span class="font-bold text-gray-900">₹${order.makingCharges.toLocaleString('en-IN')}</span>
+                                        </div>
+                                    ` : ''}
+                                    ${order.gst ? `
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-gray-700">GST (${order.gst}%):</span>
+                                            <span class="font-bold text-gray-900">${formatCurrency(tempAmount * order.gst / (100 + order.gst))}</span>
+                                        </div>
+                                    ` : ''}
+                                    <div class="pt-3 mt-3 border-t-2 border-green-400 flex justify-between items-center">
+                                        <span class="text-green-900 font-bold text-lg">Estimated Total:</span>
+                                        <span class="text-green-700 font-bold text-2xl">${formatCurrency(tempAmount)}</span>
+                                    </div>
+                                    <p class="text-xs text-gray-600 italic mt-2">
+                                        ⚠️ This is a temporary estimate. Actual amount will be calculated at delivery based on the market rate at that time.
+                                    </p>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Payment Details -->
+                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                            <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined">account_balance_wallet</span>
+                                Payment Details
+                            </h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-gray-600 text-sm">Advance Amount:</p>
+                                    <p class="font-bold text-gray-900 text-lg">₹${order.advanceAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 text-sm">Balance Amount:</p>
+                                    <p class="font-bold text-gray-900 text-lg">₹${order.balanceAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Show modal
+                document.getElementById('order-details-modal').classList.remove('hidden');
+                document.getElementById('order-details-modal').classList.add('flex');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Failed to load order details');
+            }
+        }
+
+        function hideOrderDetailsModal() {
+            document.getElementById('order-details-modal').classList.add('hidden');
+            document.getElementById('order-details-modal').classList.remove('flex');
+        }
+
+        // Make functions globally accessible for onclick handlers
+        window.toggleJobDetails = toggleJobDetails;
+        window.viewOrderDetails = viewOrderDetails;
+        window.hideOrderDetailsModal = hideOrderDetailsModal;
+        window.showStartWorkModal = showStartWorkModal;
+        window.hideStartWorkModal = hideStartWorkModal;
+        window.submitStartWork = submitStartWork;
+        window.showCompleteWorkModal = showCompleteWorkModal;
+        window.hideCompleteWorkModal = hideCompleteWorkModal;
+        window.submitCompleteWork = submitCompleteWork;
+        window.filterByStatus = filterByStatus;
+        window.calculateReturn = calculateReturn;
+        window.showDifference = showDifference;
+        window.logout = logout;
+
+        // Image Carousel Management
+        const carouselIntervals = {};
+        const carouselStates = {};
+
+        function startCarousel(jobId) {
+            if (carouselIntervals[jobId]) return; // Already running
+
+            const images = Array.from(document.querySelectorAll(`#carousel-${jobId} .carousel-image`));
+            if (images.length <= 1) return; // No need for carousel
+
+            carouselStates[jobId] = { currentIndex: 0, images: images };
+            
+            carouselIntervals[jobId] = setInterval(() => {
+                const state = carouselStates[jobId];
+                const nextIndex = (state.currentIndex + 1) % state.images.length;
+                
+                // Fade out current
+                state.images[state.currentIndex].style.opacity = '0';
+                
+                // Fade in next
+                state.images[nextIndex].style.opacity = '1';
+                
+                // Update dots
+                updateCarouselDots(jobId, nextIndex);
+                
+                state.currentIndex = nextIndex;
+            }, 3000); // Change every 3 seconds
+
+            // Update control icon
+            const controlIcon = document.getElementById(`carousel-control-${jobId}`);
+            if (controlIcon) controlIcon.textContent = 'pause';
+        }
+
+        function stopCarousel(jobId) {
+            if (carouselIntervals[jobId]) {
+                clearInterval(carouselIntervals[jobId]);
+                delete carouselIntervals[jobId];
+            }
+            
+            // Update control icon
+            const controlIcon = document.getElementById(`carousel-control-${jobId}`);
+            if (controlIcon) controlIcon.textContent = 'play_arrow';
+        }
+
+        function toggleCarousel(jobId) {
+            if (carouselIntervals[jobId]) {
+                stopCarousel(jobId);
+            } else {
+                startCarousel(jobId);
+            }
+        }
+
+        function goToSlide(jobId, index) {
+            stopCarousel(jobId); // Pause when user manually navigates
+            
+            const state = carouselStates[jobId];
+            if (!state) return;
+            
+            // Hide current
+            state.images[state.currentIndex].style.opacity = '0';
+            
+            // Show selected
+            state.images[index].style.opacity = '1';
+            
+            // Update dots
+            updateCarouselDots(jobId, index);
+            
+            state.currentIndex = index;
+        }
+
+        function updateCarouselDots(jobId, activeIndex) {
+            const dots = document.querySelectorAll(`[data-carousel="${jobId}"].carousel-dot`);
+            dots.forEach((dot, idx) => {
+                if (idx === activeIndex) {
+                    dot.classList.add('active');
+                    dot.style.width = '2rem';
+                } else {
+                    dot.classList.remove('active');
+                    dot.style.width = '0.5rem';
+                }
+            });
+        }
+
+        // Start carousels when details are expanded
+        const originalToggleJobDetails = toggleJobDetails;
+        toggleJobDetails = function(jobId) {
+            const detailsDiv = document.getElementById(`job-details-${jobId}`);
+            const wasHidden = detailsDiv.classList.contains('hidden');
+            
+            originalToggleJobDetails(jobId);
+            
+            if (wasHidden) {
+                // Just opened, start carousel
+                setTimeout(() => startCarousel(jobId), 100);
+            } else {
+                // Just closed, stop carousel
+                stopCarousel(jobId);
+            }
+        };
+
+        // Image Zoom Modal
+        let zoomState = {
+            images: [],
+            currentIndex: 0,
+            zoomLevel: 1,
+            jobId: null
+        };
+
+        function openImageZoom(jobId, startIndex, images) {
+            // Filter out empty images
+            zoomState.images = images.filter(img => img && img !== 'null' && img !== '');
+            zoomState.currentIndex = startIndex;
+            zoomState.jobId = jobId;
+            zoomState.zoomLevel = 1;
+            
+            // Stop carousel when opening zoom
+            stopCarousel(jobId);
+            
+            // Show modal
+            const modal = document.getElementById('image-zoom-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Display current image
+            updateZoomImage();
+            
+            // Create thumbnails
+            createThumbnails();
+        }
+
+        function closeImageZoom() {
+            const modal = document.getElementById('image-zoom-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            // Restart carousel
+            if (zoomState.jobId) {
+                startCarousel(zoomState.jobId);
+            }
+            
+            resetZoom();
+        }
+
+        function updateZoomImage() {
+            const img = document.getElementById('zoom-image');
+            img.src = zoomState.images[zoomState.currentIndex];
+            img.style.transform = `scale(${zoomState.zoomLevel})`;
+            
+            // Update counter
+            document.getElementById('zoom-image-counter').textContent = 
+                `${zoomState.currentIndex + 1} / ${zoomState.images.length}`;
+            
+            // Update thumbnail highlighting
+            highlightThumbnail(zoomState.currentIndex);
+        }
+
+        function createThumbnails() {
+            const container = document.getElementById('zoom-thumbnails');
+            container.innerHTML = zoomState.images.map((img, idx) => `
+                <div class="thumbnail-item cursor-pointer border-2 ${idx === zoomState.currentIndex ? 'border-purple-500' : 'border-white/30'} rounded-lg overflow-hidden transition-all hover:border-purple-400" 
+                     onclick="selectThumbnail(${idx})">
+                    <img src="${img}" alt="Thumbnail ${idx + 1}" class="w-16 h-16 object-cover">
+                </div>
+            `).join('');
+        }
+
+        function highlightThumbnail(index) {
+            const thumbnails = document.querySelectorAll('.thumbnail-item');
+            thumbnails.forEach((thumb, idx) => {
+                if (idx === index) {
+                    thumb.className = 'thumbnail-item cursor-pointer border-2 border-purple-500 rounded-lg overflow-hidden transition-all hover:border-purple-400';
+                } else {
+                    thumb.className = 'thumbnail-item cursor-pointer border-2 border-white/30 rounded-lg overflow-hidden transition-all hover:border-purple-400';
+                }
+            });
+        }
+
+        function selectThumbnail(index) {
+            zoomState.currentIndex = index;
+            zoomState.zoomLevel = 1; // Reset zoom when changing image
+            updateZoomImage();
+        }
+
+        function nextImage() {
+            zoomState.currentIndex = (zoomState.currentIndex + 1) % zoomState.images.length;
+            zoomState.zoomLevel = 1; // Reset zoom when changing image
+            updateZoomImage();
+        }
+
+        function previousImage() {
+            zoomState.currentIndex = (zoomState.currentIndex - 1 + zoomState.images.length) % zoomState.images.length;
+            zoomState.zoomLevel = 1; // Reset zoom when changing image
+            updateZoomImage();
+        }
+
+        function zoomIn() {
+            zoomState.zoomLevel = Math.min(zoomState.zoomLevel + 0.25, 3);
+            updateZoomImage();
+        }
+
+        function zoomOut() {
+            zoomState.zoomLevel = Math.max(zoomState.zoomLevel - 0.25, 0.5);
+            updateZoomImage();
+        }
+
+        function resetZoom() {
+            zoomState.zoomLevel = 1;
+            updateZoomImage();
+        }
+
+        function toggleZoom() {
+            if (zoomState.zoomLevel === 1) {
+                zoomState.zoomLevel = 2;
+            } else {
+                zoomState.zoomLevel = 1;
+            }
+            updateZoomImage();
+        }
+
+        // Make zoom functions global
+        window.openImageZoom = openImageZoom;
+        window.closeImageZoom = closeImageZoom;
+        window.nextImage = nextImage;
+        window.previousImage = previousImage;
+        window.zoomIn = zoomIn;
+        window.zoomOut = zoomOut;
+        window.resetZoom = resetZoom;
+        window.toggleZoom = toggleZoom;
+        window.selectThumbnail = selectThumbnail;
+        window.toggleCarousel = toggleCarousel;
+        window.goToSlide = goToSlide;
+
+        function logout() {
+            // Clear all authentication data
+            localStorage.removeItem('jmw_token');
+            localStorage.removeItem('jmw_user');
+            localStorage.removeItem('craftsmanToken');
+            localStorage.removeItem('craftsmanId');
+            localStorage.removeItem('craftsmanName');
+            localStorage.removeItem('craftsmanMobile');
+            
+            // Redirect to login
+            window.location.href = '../index.html';
+        }
+
+        // Check authentication
+        if (!token || !workerInfo.id) {
+            window.location.href = '../craftsman-index.html';
+        } else {
+            loadJobs();
+        }
+    </script>
+</body>
+</html>

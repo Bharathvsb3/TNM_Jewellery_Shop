@@ -1,0 +1,99 @@
+/* 
+===========================================
+   ADMIN DASHBOARD - MOBILE RESPONSIVE
+   Tailwind-based dashboard fixes
+===========================================
+*/
+
+/* === GLOBAL === */
+@media (max-width: 768px) {
+    /* Main containers */
+    .container {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    /* Sidebar */
+    .sidebar,
+    [class*="sidebar"] {
+        position: fixed;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 100;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    /* Hide desktop elements */
+    .hidden-mobile {
+        display: none !important;
+    }
+    
+    /* Stack grids */
+    [class*="grid-cols-2"],
+    [class*="grid-cols-3"],
+    [class*="grid-cols-4"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Tables */
+    .overflow-x-auto {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px;
+        font-size: 13px;
+    }
+    
+    th, td {
+        padding: 8px 6px !important;
+    }
+    
+    /* Forms */
+    .flex-row {
+        flex-direction: column !important;
+    }
+    
+    input, select, textarea {
+        font-size: 16px !important; /* Prevent iOS zoom */
+    }
+    
+    /* Modals */
+    .modal {
+        padding: 10px !important;
+    }
+    
+    .modal > div {
+        max-width: 100% !important;
+        width: 100% !important;
+        max-height: 95vh;
+    }
+    
+    /* Cards */
+    .card {
+        margin-bottom: 12px;
+    }
+    
+    /* Buttons */
+    button {
+        min-height: 44px;
+        font-size: 14px;
+    }
+    
+    /* Spacing */
+    .p-8 { padding: 1rem !important; }
+    .p-6 { padding: 0.75rem !important; }
+    .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+    .px-6 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+}
+
+/* === TABLET === */
+@media (min-width: 769px) and (max-width: 1024px) {
+    [class*="grid-cols-4"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}

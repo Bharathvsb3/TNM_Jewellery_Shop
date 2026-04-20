@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - Jewellery Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .test-pass { color: #10b981; }
+        .test-fail { color: #ef4444; }
+        .test-pending { color: #f59e0b; }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">API Endpoint Testing</h1>
+        
+        <!-- Login Section -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-xl font-bold mb-4">1. Authentication</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Mobile/Email:</label>
+                    <input type="text" id="login-mobile" value="9876543210" class="border px-4 py-2 rounded w-full">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Password:</label>
+                    <input type="password" id="login-password" value="admin123" class="border px-4 py-2 rounded w-full">
+                </div>
+                <button onclick="testLogin()" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                    Test Login
+                </button>
+                <div id="login-result" class="mt-4 p-4 bg-gray-100 rounded"></div>
+            </div>
+        </div>
+
+        <!-- API Tests -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-xl font-bold mb-4">2. API Endpoints Test</h2>
+            <button onclick="runAllTests()" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 mb-4">
+                Run All Tests
+            </button>
+            <div id="test-results" class="space-y-2"></div>
+        </div>
+
+        <!-- Token Display -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Current Token</h2>
+            <pre id="token-display" class="bg-gray-100 p-4 rounded text-xs overflow-auto">No token set</pre>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://localhost:5001/api';
+        let authToken = '';
+
+        async function testLogin() {
+            const mobile = document.getElementById('login-mobile').value;
+            const password = document.getElementById('login-password').value;
+            const resultDiv = document.getElementById('login-result');
+
+            try {
+                const response = await fetch(`${API_BASE}/Auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emailOrMobile: mobile, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    localStorage.setItem('jmw_token', authToken);
+                    localStorage.setItem('jmw_user', JSON.stringify(data));
+                    document.getElementById('token-display').textContent = authToken;
+                    resultDiv.innerHTML = `<div class="test-pass">✓ Login successful!</div>
+                        <pre class="mt-2 text-xs">${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="test-fail">✗ Login failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-fail">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function apiRequest(endpoint, options = {}) {
+            const token = authToken || localStorage.getItem('jmw_token');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers
+            });
+
+            const data = await response.json();
+            return { ok: response.ok, status: response.status, data };
+        }
+
+        async function runAllTests() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<div class="test-pending">Running tests...</div>';
+
+            const tests = [
+                { name: 'Get All Customers', endpoint: '/Customers', method: 'GET' },
+                { name: 'Get All Orders', endpoint: '/Orders', method: 'GET' },
+                { name: 'Get All Enquiries', endpoint: '/Enquiries', method: 'GET' },
+                { name: 'Get All Workers', endpoint: '/Workers', method: 'GET' },
+                { name: 'Get All Products', endpoint: '/Products', method: 'GET' },
+                { name: 'Get Latest Gold Rate', endpoint: '/GoldRates/latest', method: 'GET' },
+                { name: 'Get Today Gold Rates', endpoint: '/GoldRates/today', method: 'GET' },
+            ];
+
+            let results = [];
+
+            for (let test of tests) {
+                try {
+                    const result = await apiRequest(test.endpoint, { method: test.method });
+                    const status = result.ok ? 'PASS' : 'FAIL';
+                    const statusClass = result.ok ? 'test-pass' : 'test-fail';
+                    
+                    results.push(`
+                        <div class="border-b pb-2">
+                            <div class="${statusClass} font-bold">
+                                ${status === 'PASS' ? '✓' : '✗'} ${test.name}
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1">
+                                ${test.method} ${test.endpoint} - Status: ${result.status}
+                            </div>
+                            <details class="mt-2">
+                                <summary class="cursor-pointer text-xs text-blue-600">View Response</summary>
+                                <pre class="mt-2 text-xs bg-gray-50 p-2 rounded overflow-auto max-h-40">${JSON.stringify(result.data, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `);
+                } catch (error) {
+                    results.push(`
+                        <div class="border-b pb-2">
+                            <div class="test-fail font-bold">✗ ${test.name}</div>
+                            <div class="text-xs text-gray-600 mt-1">Error: ${error.message}</div>
+                        </div>
+                    `);
+                }
+            }
+
+            resultsDiv.innerHTML = results.join('');
+        }
+
+        // Check for existing token on load
+        window.onload = () => {
+            const token = localStorage.getItem('jmw_token');
+            if (token) {
+                authToken = token;
+                document.getElementById('token-display').textContent = token;
+            }
+        };
+    </script>
+</body>
+</html>

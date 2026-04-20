@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard - Jewellery Management</title>
+    <link rel="stylesheet" href="css/responsive-fix.css">
+    <link rel="stylesheet" href="css/dashboard-responsive.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed-variant": "#52452c",
+                        "on-primary-fixed-variant": "#5d4201",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#f4e0be",
+                        "inverse-primary": "#e9c176",
+                        "on-background": "#1c1b1b",
+                        "tertiary": "#6b5c42",
+                        "surface-variant": "#e5e2e1",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#313030",
+                        "on-surface-variant": "#4e4639",
+                        "tertiary-container": "#b5a384",
+                        "on-error-container": "#93000a",
+                        "secondary": "#5f5e5e",
+                        "primary-fixed-dim": "#e9c176",
+                        "on-surface": "#1c1b1b",
+                        "on-secondary-fixed-variant": "#474747",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#d7c4a4",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#775a19",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#eae7e7",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed": "#241a06",
+                        "secondary-fixed-dim": "#c8c6c6",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "surface-container-highest": "#e5e2e1",
+                        "inverse-on-surface": "#f3f0ef",
+                        "primary": "#775a19",
+                        "on-secondary-container": "#656464",
+                        "outline": "#7f7667",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#fcf9f8",
+                        "secondary-container": "#e4e2e1",
+                        "primary-fixed": "#ffdea5",
+                        "outline-variant": "#d1c5b4",
+                        "on-tertiary-container": "#463921",
+                        "surface-container": "#f0eded",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e4e2e1",
+                        "surface": "#fcf9f8",
+                        "on-primary-fixed": "#261900",
+                        "on-primary-container": "#4e3700",
+                        "primary-container": "#c5a059"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.125rem",
+                        lg: "0.25rem",
+                        xl: "0.5rem",
+                        full: "0.75rem"
+                    },
+                    fontFamily: {
+                        headline: ["Noto Serif"],
+                        body: ["Manrope"],
+                        label: ["Manrope"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Manrope', sans-serif; 
+            background-color: #fcf9f8; 
+            overflow-x: hidden;
+        }
+        .serif-font { font-family: 'Noto Serif', serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            user-select: none;
+        }
+        .golden-gradient {
+            background: linear-gradient(135deg, #775a19 0%, #c5a059 100%);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .golden-gradient:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(119, 90, 25, 0.3);
+        }
+        .golden-gradient:active {
+            transform: translateY(0);
+        }
+        
+        /* Notification Dropdown */
+        #notification-dropdown {
+            animation: slideDown 0.2s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .animate-pulse-slow {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* Toast Notification Animation */
+        .animate-slide-in {
+            animation: slideInRight 0.3s ease-out;
+        }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        #notification-badge {
+            animation: pulse 2s infinite;
+        }
+        #notification-list::-webkit-scrollbar { width: 4px; }
+        #notification-list::-webkit-scrollbar-thumb { 
+            background: #d1c5b4; 
+            border-radius: 10px; 
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #fcf9f8; }
+        ::-webkit-scrollbar-thumb { 
+            background: #d1c5b4; 
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #c5a059; }
+        
+        /* Active navigation state */
+        .nav-link {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .nav-link.active {
+            background-color: #eae7e7 !important;
+            color: #775a19 !important;
+            font-weight: 700 !important;
+        }
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #775a19;
+            border-radius: 2px 0 0 2px;
+        }
+        .nav-link.active .material-symbols-outlined {
+            color: #775a19 !important;
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            body { 
+                font-size: 14px; 
+            }
+            h1 { font-size: 1.75rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.25rem; }
+            
+            /* Optimize table for mobile */
+            table {
+                font-size: 0.875rem;
+            }
+            table th,
+            table td {
+                white-space: nowrap;
+            }
+            
+            /* Better touch targets on mobile */
+            button, a {
+                min-height: 44px;
+            }
+            
+            /* Adjust modal padding on mobile */
+            .modal-content {
+                padding: 1rem !important;
+            }
+        }
+        
+        /* Tablet Optimizations */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            /* Ensure proper spacing on tablets */
+            .grid {
+                gap: 1rem;
+            }
+        }
+        
+        /* Prevent horizontal scroll */
+        body {
+            overflow-x: hidden;
+        }
+        
+        /* Improve scrollable table on mobile */
+        .overflow-x-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .overflow-x-auto::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .overflow-x-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+            background: #c5a059;
+            border-radius: 2px;
+        }
+        
+        /* Smooth Transitions */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Metal Type Theme Styles */
+        .theme-gold {
+            border-color: #D4AF37 !important;
+            background-color: #FEF9E7 !important;
+        }
+        .theme-gold:focus {
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3) !important;
+        }
+        
+        .theme-silver {
+            border-color: #C0C0C0 !important;
+            background-color: #F5F5F5 !important;
+        }
+        .theme-silver:focus {
+            box-shadow: 0 0 0 3px rgba(192, 192, 192, 0.3) !important;
+        }
+        
+        .theme-platinum {
+            border-color: #E5E4E2 !important;
+            background-color: #FAFAFA !important;
+        }
+        .theme-platinum:focus {
+            box-shadow: 0 0 0 3px rgba(229, 228, 226, 0.3) !important;
+        }
+        
+        .metal-theme-active {
+            animation: metalPulse 0.5s ease;
+        }
+        
+        @keyframes metalPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        /* Hamburger Menu Animation */
+        .menu-toggle-btn {
+            overflow: hidden;
+            position: fixed;
+            transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.4s ease, box-shadow 0.3s ease;
+            will-change: transform, opacity;
+        }
+        
+        .menu-toggle-btn.menu-hidden {
+            transform: translateY(-80px) scale(0.8);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .menu-toggle-btn.menu-visible {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .menu-toggle-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .menu-toggle-btn:hover::before {
+            left: 100%;
+        }
+        
+        .menu-toggle-btn:hover:not(.menu-hidden) {
+            background: linear-gradient(135deg, #A0826D 0%, #B8956F 100%) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .menu-toggle-btn.menu-visible:hover {
+            transform: translateY(0) scale(1.08) rotate(5deg);
+        }
+        
+        .menu-toggle-btn:active:not(.menu-hidden) {
+            transform: translateY(0) scale(0.92);
+        }
+        
+        .hamburger-icon {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 20px;
+        }
+        
+        .hamburger-bar {
+            width: 100%;
+            height: 2.5px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .menu-toggle-btn.active {
+            background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%) !important;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+        }
+        
+        .menu-toggle-btn.menu-visible.active {
+            transform: translateY(0) rotate(180deg);
+        }
+        
+        .menu-toggle-btn.active .hamburger-bar:nth-child(1) {
+            transform: translateY(6.5px) rotate(45deg);
+        }
+        
+        .menu-toggle-btn.active .hamburger-bar:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0);
+        }
+        
+        .menu-toggle-btn.active .hamburger-bar:nth-child(3) {
+            transform: translateY(-6.5px) rotate(-45deg);
+        }
+        
+        @keyframes menuPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Header Scroll Animation */
+        header {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        header.header-hidden {
+            transform: translateY(-100%);
+        }
+        
+        header.header-visible {
+            transform: translateY(0);
+        }
+        
+        /* Metal Type Select Styling */
+        select[id*="metal"] option[value="Gold"] {
+            background: linear-gradient(to right, #FEF9E7, #F4E5C2);
+            color: #B8941F;
+            font-weight: bold;
+        }
+        select[id*="metal"] option[value="Silver"] {
+            background: linear-gradient(to right, #F5F5F5, #E8E8E8);
+            color: #606060;
+            font-weight: bold;
+        }
+        select[id*="metal"] option[value="Platinum"] {
+            background: linear-gradient(to right, #FAFAFA, #F5F5F5);
+            color: #707070;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="text-on-background bg-background">
+    
+    <!-- Mobile Menu Toggle - Enhanced -->
+    <button class="fixed left-4 top-4 z-50 w-11 h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center md:hidden shadow-lg menu-toggle-btn menu-visible" id="mobile-menu-toggle" style="background: linear-gradient(135deg, #8B7355 0%, #A0826D 100%);">
+        <div class="hamburger-icon">
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+        </div>
+    </button>
+    <div class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity backdrop-blur-sm" id="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="h-screen w-72 sm:w-80 md:w-72 fixed left-0 top-0 bg-[#fcf9f8] dark:bg-stone-950 flex flex-col py-6 md:py-8 px-4 md:px-6 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300" id="sidebar">
+        <div class="mb-6 md:mb-10 px-2 md:px-4">
+            <h1 class="text-lg md:text-xl font-bold text-[#775a19] dark:text-[#c5a059] italic serif-font" id="sidebar-shop-name">Loading...</h1>
+        </div>
+        
+        <nav class="flex-1 space-y-1 overflow-y-auto pr-1 md:pr-2">
+            <a href="#dashboard" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="dashboard">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Dashboard</span>
+            </a>
+            <a href="#customers" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="customers">
+                <span class="material-symbols-outlined">group</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Customers</span>
+            </a>
+            <a href="#enquiries" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="enquiries">
+                <span class="material-symbols-outlined">contact_support</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Enquiries</span>
+            </a>
+            <a href="#orders" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="orders">
+                <span class="material-symbols-outlined">shopping_bag</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Orders</span>
+            </a>
+            <a href="#workers" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="workers">
+                <span class="material-symbols-outlined">engineering</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Craftsmen</span>
+            </a>
+            <a href="#products" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="products">
+                <span class="material-symbols-outlined">diamond</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Products</span>
+            </a>
+            <a href="#gold-tracking" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="gold-tracking">
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Gold Tracking</span>
+            </a>
+            <a href="#gold-dispatch" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="gold-dispatch">
+                <span class="material-symbols-outlined">send</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Material Dispatch</span>
+            </a>
+            <a href="#craft-work" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="craft-work">
+                <span class="material-symbols-outlined">handyman</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Craft Work</span>
+            </a>
+            <a href="#craftsman-approvals" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="craftsman-approvals">
+                <span class="material-symbols-outlined">approval</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Craftsman Approvals</span>
+            </a>
+            
+            <div class="pt-4 md:pt-6 pb-2 px-3 md:px-4">
+                <span class="text-[9px] md:text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em] text-outline font-bold">Administration</span>
+            </div>
+            
+            <a href="#customer-outstanding-report" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="customer-outstanding-report">
+                <span class="material-symbols-outlined">summarize</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Outstanding Report</span>
+            </a>
+            <a href="#reports" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="reports">
+                <span class="material-symbols-outlined">monitoring</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Analytics</span>
+            </a>
+            <a href="#database-management" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="database-management">
+                <span class="material-symbols-outlined">database</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Database</span>
+            </a>
+            <a href="#profile" class="nav-link flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-[#5f5e5e] dark:text-stone-400 hover:text-[#775a19] dark:hover:text-[#c5a059] hover:bg-[#f6f3f2] dark:hover:bg-stone-900 transition-colors rounded-lg" data-page="profile">
+                <span class="material-symbols-outlined">account_circle</span>
+                <span class="font-['Noto_Serif'] font-medium tracking-wide">Profile</span>
+            </a>
+        </nav>
+        
+        <div class="mt-auto border-t border-surface-container-high pt-4 md:pt-6">
+            <div class="flex items-center gap-2 md:gap-3 px-2">
+                <div class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary-fixed-dim flex items-center justify-center text-[10px] font-bold text-on-primary-fixed" id="user-initials">
+                    A
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-on-surface serif-font" id="user-name">Admin</p>
+                    <p class="text-[10px] text-outline uppercase tracking-wider" id="user-role">ADMIN</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="pl-0 md:pl-72 min-h-screen relative">
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-[#fcf9f8]/60 dark:bg-stone-950/60 backdrop-blur-xl shadow-sm dark:shadow-none flex justify-between items-center w-full pl-16 md:pl-8 pr-4 md:pr-12 py-4 md:py-6">
+            <div>
+                <h2 class="text-lg md:text-2xl font-black text-[#775a19] dark:text-[#c5a059] serif-font" id="page-title">Dashboard</h2>
+                <p class="font-['Noto_Serif'] uppercase tracking-[0.15em] md:tracking-[0.2em] text-[9px] md:text-[10px] text-outline hidden sm:block">Digital Atelier & Management</p>
+            </div>
+            <div class="flex items-center gap-3 md:gap-8">
+                <div class="relative hidden lg:flex items-center bg-surface-container-low px-4 py-2 rounded-lg focus-within:ring-1 focus-within:ring-[#775a19]">
+                    <span class="material-symbols-outlined text-outline text-sm">search</span>
+                    <input class="bg-transparent border-none focus:ring-0 text-sm placeholder:text-outline/60 w-48 xl:w-64 ml-2" placeholder="Search orders or clients..." type="text"/>
+                </div>
+                <div class="flex items-center gap-3 md:gap-6 text-[#5f5e5e] dark:text-stone-400">
+                    <button onclick="toggleNotifications()" class="hover:opacity-80 transition-opacity relative">
+                        <span class="material-symbols-outlined text-xl md:text-2xl">notifications</span>
+                        <span id="notification-badge" class="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-error text-white text-[9px] md:text-[10px] font-bold rounded-full flex items-center justify-center hidden">0</span>
+                    </button>
+                    <button onclick="openSettings()" class="hover:opacity-80 transition-opacity hidden md:block" title="Settings">
+                        <span class="material-symbols-outlined">settings</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Notification Dropdown -->
+        <div id="notification-dropdown" class="fixed top-16 md:top-20 right-2 md:right-12 w-[calc(100vw-1rem)] sm:w-96 max-w-[90vw] bg-surface-container-lowest rounded-xl shadow-2xl border border-outline-variant hidden z-50 max-h-[500px] overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-outline-variant bg-surface-container-low">
+                <h3 class="text-lg font-bold serif-font text-on-surface">Notifications</h3>
+                <p class="text-xs text-outline mt-1">Follow-up reminders and updates</p>
+            </div>
+            <div id="notification-list" class="overflow-y-auto flex-1">
+                <div class="text-center py-12 text-outline">
+                    <span class="material-symbols-outlined text-4xl">notifications_none</span>
+                    <p class="text-sm mt-2">No notifications</p>
+                </div>
+            </div>
+            <div class="p-3 border-t border-outline-variant bg-surface-container-low">
+                <button onclick="markAllAsRead()" class="text-xs text-primary hover:text-primary-container font-bold uppercase tracking-wider w-full text-center py-2">
+                    Mark All as Read
+                </button>
+            </div>
+        </div>
+
+        <!-- Dynamic Content Container -->
+        <div class="p-3 sm:p-4 md:p-8 lg:p-12" id="content-area">
+            <!-- Pages load here dynamically -->
+        </div>
+    </main>
+
+    <!-- FAB Button -->
+    <!-- <div class="fixed bottom-12 right-12">
+        <button class="w-16 h-16 rounded-full golden-gradient shadow-2xl shadow-primary/40 flex items-center justify-center text-white hover:scale-110 transition-transform active:scale-95 group">
+            <span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300">add</span>
+        </button>
+    </div> -->
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div class="bg-surface-container-lowest rounded-xl max-w-lg w-full shadow-2xl border border-outline-variant">
+            <div class="p-6 border-b border-outline-variant/30 bg-gradient-to-r from-primary/10 to-secondary/10">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-3xl text-primary">settings</span>
+                        <h2 class="text-2xl font-bold serif-font text-on-surface">System Settings</h2>
+                    </div>
+                    <button onclick="closeSettings()" class="hover:bg-surface-container-high rounded-full p-2 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <p class="text-sm text-outline mt-2">Configure display and formatting preferences</p>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Decimal Places Setting -->
+                <div class="bg-surface-container-low rounded-lg p-4 border border-outline-variant">
+                    <label class="flex items-center gap-2 text-sm font-bold text-on-surface mb-3">
+                        <span class="material-symbols-outlined text-primary">decimal_increase</span>
+                        Decimal Places for Currency & Numbers
+                    </label>
+                    <p class="text-xs text-outline mb-4">
+                        Controls how many decimal places are shown for prices, weights, and percentages throughout the application.
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="decimal-places-slider" min="0" max="4" step="1" 
+                               class="flex-1 h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary"
+                               onchange="updateDecimalPlaces(this.value)">
+                        <div class="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-lg border-2 border-primary min-w-[80px] justify-center">
+                            <span id="decimal-places-value" class="text-2xl font-bold text-primary">2</span>
+                            <span class="text-sm text-outline">decimals</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 bg-surface-container-highest rounded-lg border border-outline-variant">
+                        <p class="text-xs font-bold text-on-surface mb-2">Preview:</p>
+                        <div class="space-y-1 text-sm">
+                            <p class="text-outline">Currency: <span id="preview-currency" class="font-bold text-on-surface">₹1,234.56</span></p>
+                            <p class="text-outline">Weight: <span id="preview-weight" class="font-bold text-on-surface">12.34g</span></p>
+                            <p class="text-outline">Percentage: <span id="preview-percent" class="font-bold text-on-surface">5.00%</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Future Settings Placeholder -->
+                <div class="bg-surface-container-low/50 rounded-lg p-4 border border-dashed border-outline-variant">
+                    <p class="text-xs text-outline italic text-center">
+                        Additional settings will be available here in future updates
+                    </p>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-outline-variant/30 bg-surface-container-low flex gap-3">
+                <button onclick="saveSettings()" class="flex-1 px-6 py-3 golden-gradient text-white font-bold rounded-lg hover:shadow-lg transition-shadow flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Save Changes
+                </button>
+                <button onclick="closeSettings()" class="flex-1 px-6 py-3 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold rounded-lg transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/spa-router.js"></script>
+    
+    <script>
+        // Check auth on load
+        const token = localStorage.getItem('jmw_token');
+        const userStr = localStorage.getItem('jmw_user');
+        
+        if (!token) {
+            window.location.replace('index.html');
+        }
+
+        // Initialize branding
+        if (typeof SHOP_CONFIG !== 'undefined') {
+            document.getElementById('sidebar-shop-name').textContent = SHOP_CONFIG.name;
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('user-name').textContent = user.name || 'Admin';
+                document.getElementById('user-role').textContent = (user.role || 'ADMIN').toUpperCase();
+                
+                // Set initials
+                const name = user.name || 'Admin';
+                const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                document.getElementById('user-initials').textContent = initials;
+            }
+        }
+
+        // Mobile menu toggle with animation
+        const menuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('opacity-0');
+            sidebarOverlay.classList.toggle('pointer-events-none');
+            
+            // Prevent body scroll when menu is open
+            if (!sidebar.classList.contains('-translate-x-full')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            menuToggle.classList.remove('active');
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('opacity-0');
+            sidebarOverlay.classList.add('pointer-events-none');
+            document.body.style.overflow = '';
+        });
+        
+        // Close menu when clicking nav links on mobile
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) {
+                    menuToggle.classList.remove('active');
+                    sidebar.classList.add('-translate-x-full');
+                    sidebarOverlay.classList.add('opacity-0');
+                    sidebarOverlay.classList.add('pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+        
+        // Auto-hide header on scroll
+        let lastScrollTop = 0;
+        let ticking = false;
+        const header = document.querySelector('header');
+        
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    handleHeaderScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+        
+        function handleHeaderScroll() {
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            const menuToggle = document.getElementById('mobile-menu-toggle');
+            
+            // Only hide header and menu on mobile/tablet
+            if (window.innerWidth < 1024) {
+                if (currentScroll > lastScrollTop && currentScroll > 80) {
+                    // Scrolling down - hide header and menu
+                    header.classList.add('header-hidden');
+                    header.classList.remove('header-visible');
+                    if (menuToggle) {
+                        menuToggle.classList.add('menu-hidden');
+                        menuToggle.classList.remove('menu-visible');
+                    }
+                } else {
+                    // Scrolling up - show header and menu
+                    header.classList.remove('header-hidden');
+                    header.classList.add('header-visible');
+                    if (menuToggle) {
+                        menuToggle.classList.remove('menu-hidden');
+                        menuToggle.classList.add('menu-visible');
+                    }
+                }
+            } else {
+                // Always show header on desktop, hide menu
+                header.classList.remove('header-hidden');
+                header.classList.add('header-visible');
+                if (menuToggle) {
+                    menuToggle.classList.remove('menu-visible');
+                    menuToggle.classList.add('menu-hidden');
+                }
+            }
+            
+            lastScrollTop = Math.max(0, currentScroll);
+        }
+
+        // Logout function moved to profile page
+
+        // Notification System
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            const isHidden = dropdown.classList.contains('hidden');
+            
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                loadNotifications();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('notification-dropdown');
+            const bellButton = e.target.closest('button[onclick="toggleNotifications()"]');
+            
+            if (!dropdown.contains(e.target) && !bellButton) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - new Date(date);
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        }
+
+        async function loadNotifications() {
+            try {
+                const enquiries = await apiRequest(`${API_BASE_URL}/Enquiries`);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const notifications = [];
+
+                // Check for follow-up dates
+                enquiries.forEach(enquiry => {
+                    if (enquiry.followupDate) {
+                        const followupDate = new Date(enquiry.followupDate);
+                        followupDate.setHours(0, 0, 0, 0);
+                        const diffDays = Math.ceil((followupDate - today) / (1000 * 60 * 60 * 24));
+
+                        // Show notifications for today, past due, or within next 3 days
+                        if (diffDays <= 3 && enquiry.status !== 'Converted' && enquiry.status !== 'Closed') {
+                            notifications.push({
+                                id: enquiry.id,
+                                type: 'followup',
+                                subject: enquiry.subject,
+                                customerName: enquiry.customerName,
+                                followupDate: enquiry.followupDate,
+                                diffDays: diffDays,
+                                createdAt: enquiry.createdAt
+                            });
+                        }
+                    }
+                });
+
+                // Sort by urgency (past due first, then by date)
+                notifications.sort((a, b) => {
+                    if (a.diffDays !== b.diffDays) return a.diffDays - b.diffDays;
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+
+                renderNotifications(notifications);
+                updateNotificationBadge(notifications.length);
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        function renderNotifications(notifications) {
+            const container = document.getElementById('notification-list');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-outline">
+                        <span class="material-symbols-outlined text-4xl">notifications_none</span>
+                        <p class="text-sm mt-2">No notifications</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notifications.map(notif => {
+                const diffDays = notif.diffDays;
+                let urgencyClass = 'bg-blue-50 border-l-blue-500';
+                let urgencyIcon = 'schedule';
+                let urgencyText = `Follow-up in ${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+                
+                if (diffDays < 0) {
+                    urgencyClass = 'bg-red-50 border-l-error';
+                    urgencyIcon = 'warning';
+                    urgencyText = `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
+                } else if (diffDays === 0) {
+                    urgencyClass = 'bg-orange-50 border-l-orange-500';
+                    urgencyIcon = 'notification_important';
+                    urgencyText = 'Follow-up today';
+                }
+
+                return `
+                    <div onclick="navigateToEnquiry(${notif.id})" class="p-4 border-b border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors ${urgencyClass} border-l-4">
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-primary mt-1">${urgencyIcon}</span>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-on-surface line-clamp-1">${notif.subject}</p>
+                                <p class="text-xs text-outline mt-1">Customer: ${notif.customerName}</p>
+                                <p class="text-xs font-bold text-primary mt-1">${urgencyText}</p>
+                                <p class="text-xs text-outline mt-1">${getTimeAgo(notif.createdAt)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notification-badge');
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function navigateToEnquiry(enquiryId) {
+            // Close notification dropdown
+            document.getElementById('notification-dropdown').classList.add('hidden');
+            
+            // Navigate to enquiries page
+            window.location.hash = 'enquiries';
+            
+            // Wait for page to load and open enquiry details
+            setTimeout(() => {
+                if (typeof window.viewEnquiry === 'function') {
+                    window.viewEnquiry(enquiryId);
+                }
+            }, 500);
+        }
+
+        function markAllAsRead() {
+            // You can implement this to store read status in localStorage
+            updateNotificationBadge(0);
+            document.getElementById('notification-dropdown').classList.add('hidden');
+        }
+
+        // Load notifications on page load and refresh every 5 minutes
+        loadNotifications();
+        setInterval(loadNotifications, 300000); // 5 minutes
+
+        // ============================================
+        // SETTINGS MODAL FUNCTIONS
+        // ============================================
+
+        function openSettings() {
+            const modal = document.getElementById('settings-modal');
+            const slider = document.getElementById('decimal-places-slider');
+            const valueDisplay = document.getElementById('decimal-places-value');
+            
+            // Load current setting
+            const currentDecimals = getDecimalPlaces();
+            slider.value = currentDecimals;
+            valueDisplay.textContent = currentDecimals;
+            
+            // Update preview
+            updatePreview(currentDecimals);
+            
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.add('hidden');
+        }
+
+        function updateDecimalPlaces(value) {
+            const valueDisplay = document.getElementById('decimal-places-value');
+            valueDisplay.textContent = value;
+            updatePreview(value);
+        }
+
+        function updatePreview(decimals) {
+            const sampleAmount = 1234.56789;
+            const sampleWeight = 12.3456789;
+            const samplePercent = 5.00123;
+            
+            // Temporary format with selected decimals
+            const formatTemp = (num) => num.toFixed(parseInt(decimals));
+            
+            document.getElementById('preview-currency').textContent = 
+                `₹${parseFloat(sampleAmount).toLocaleString('en-IN', {
+                    minimumFractionDigits: parseInt(decimals),
+                    maximumFractionDigits: parseInt(decimals)
+                })}`;
+            
+            document.getElementById('preview-weight').textContent = `${formatTemp(sampleWeight)}g`;
+            document.getElementById('preview-percent').textContent = `${formatTemp(samplePercent)}%`;
+        }
+
+        function saveSettings() {
+            const slider = document.getElementById('decimal-places-slider');
+            const newValue = parseInt(slider.value);
+            
+            // Save to localStorage
+            setDecimalPlaces(newValue);
+            
+            // Show success message
+            showToast('Settings saved successfully! The page will reload to apply changes.', 'success');
+            
+            // Close modal
+            closeSettings();
+            
+            // Reload page after 1.5 seconds to apply changes everywhere
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-error',
+                info: 'bg-primary',
+                warning: 'bg-orange-500'
+            };
+            
+            toast.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in`;
+            toast.innerHTML = `
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Close settings modal when clicking outside
+        document.getElementById('settings-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'settings-modal') {
+                closeSettings();
+            }
+        });
+    </script>
+</body>
+</html>

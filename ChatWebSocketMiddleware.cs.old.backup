@@ -1,0 +1,425 @@
+﻿using System.Collections.Concurrent;
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using VI_Chat.ChatMethod;
+
+namespace VI_Chat.Middleware
+{
+    public class ChatWebSocketMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly ILogger<ChatWebSocketMiddleware> _logger;
+
+        private readonly IServiceProvider _provider;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly AutoReplyService _autoReplyService;
+
+
+        // ✅ MULTIPLE DEVICES PER USER
+        private static readonly ConcurrentDictionary<string, ConcurrentBag<WebSocket>> _clients
+            = new(StringComparer.OrdinalIgnoreCase);
+
+        public ChatWebSocketMiddleware(
+            RequestDelegate next,
+            IServiceScopeFactory scopeFactory,
+            ILogger<ChatWebSocketMiddleware> logger,
+            AutoReplyService autoReplyService, IServiceProvider provider)
+        {
+            _next = next;
+            _scopeFactory = scopeFactory;
+            _logger = logger;
+            _autoReplyService = autoReplyService;
+            _provider = provider;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            if (context.Request.Path != "/ws")
+            {
+                using var scope = _provider.CreateScope();
+                var autoReply = scope.ServiceProvider.GetRequiredService<AutoReplyService>();
+
+                await _next(context);
+                return;
+            }
+
+            if (!context.WebSockets.IsWebSocketRequest)
+            {
+                context.Response.StatusCode = 400;
+                return;
+            }
+
+            var userId = context.Request.Query["user"].ToString();
+            var ptouser = context.Request.Query["Touser"].ToString();
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync("Missing user query");
+                return;
+            }
+
+            var socket = await context.WebSockets.AcceptWebSocketAsync();
+
+            // ✅ ADD MULTIPLE SOCKETS PER USER
+            var sockets = _clients.GetOrAdd(userId, _ => new ConcurrentBag<WebSocket>());
+            sockets.Add(socket);
+
+            _logger.LogInformation("✅ WebSocket connected: {user}", userId);
+
+            await SendInitialDataAsync(userId, ptouser, socket);
+            await ReceiveLoopAsync(userId, ptouser, socket);
+        }
+
+        private async Task SendInitialDataAsync(string userId, string ptouser, WebSocket socket)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var repo = scope.ServiceProvider.GetRequiredService<ChatRepository>();
+
+                var history = await repo.GetHistoryAsync(userId, ptouser);
+                await SendJsonAsync(socket, new { type = "history", data = history });
+
+                await SendUnreadCountAsync(userId, ptouser);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to send initial data for {user}", userId);
+            }
+        }
+
+        private async Task ReceiveLoopAsync(string userId, string ptouser, WebSocket socket)
+        {
+            var buffer = new byte[4096];
+
+            while (socket.State == WebSocketState.Open)
+            {
+                using var ms = new MemoryStream();
+                WebSocketReceiveResult result;
+
+                do
+                {
+                    result = await socket.ReceiveAsync(
+                        new ArraySegment<byte>(buffer),
+                        CancellationToken.None
+                    );
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                        return;
+
+                    ms.Write(buffer, 0, result.Count);
+
+                } while (!result.EndOfMessage);
+
+                var msgText = Encoding.UTF8.GetString(ms.ToArray());
+
+                JsonDocument doc;
+                try
+                {
+                    doc = JsonDocument.Parse(msgText);
+                }
+                catch
+                {
+                    await SendJsonAsync(socket, new
+                    {
+                        type = "error",
+                        message = "Invalid message format"
+                    });
+                    continue;
+                }
+
+                var root = doc.RootElement;
+
+                if (!root.TryGetProperty("text", out var textEl))
+                {
+                    await SendJsonAsync(socket, new
+                    {
+                        type = "error",
+                        message = "Message text missing"
+                    });
+                    continue;
+                }
+
+                string ctext = textEl.GetString() ?? "";
+
+                // ❌ NO LENGTH LIMIT HERE
+
+                await HandleIncomingMessageAsync(userId, msgText, socket);
+            }
+
+
+        }
+
+
+        private async Task HandleIncomingMessageAsync(string userId, string msgText, WebSocket socket)
+        {
+            using var doc = JsonDocument.Parse(msgText);
+            var root = doc.RootElement;
+
+            var messageType = root.TryGetProperty("type", out var typeEl)
+                ? typeEl.GetString()
+                : "message";
+
+            using var scope = _scopeFactory.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<ChatRepository>();
+
+            switch (messageType)
+            {
+                case "markRead":
+                    await repo.MarkAllReadAsync(userId, root.GetProperty("to").GetString());
+                    await SendJsonAsync(socket, new { type = "readAck" });
+                    await SendUnreadCountAsync(userId);
+                    break;
+
+                case "getUnread":
+                    await SendUnreadCountAsync(userId);
+                    break;
+
+                default:
+                    await HandleChatMessageAsync(userId, root, socket, repo);
+                    break;
+            }
+        }
+
+        private async Task HandleChatMessageAsync(string fromUser, JsonElement root, WebSocket socket, ChatRepository repo)
+        {
+            string toUser = root.GetProperty("to").GetString();
+            string text = root.GetProperty("text").GetString();
+            
+            string? admin = null;
+            if (root.TryGetProperty("admin", out var adminElement))
+                admin = adminElement.GetString();
+
+            if (string.IsNullOrWhiteSpace(toUser) || string.IsNullOrWhiteSpace(text))
+                return;
+
+            // ✅ SAVE MESSAGE
+            await repo.SaveMessageAsync(fromUser, toUser, text);
+
+            // ✅ SEND TO ALL ONLINE DEVICES
+            if (_clients.TryGetValue(toUser, out var sockets))
+            {
+                foreach (var s in sockets)
+                {
+                    if (s.State != WebSocketState.Open)
+                        continue;
+
+                    try
+                    {
+                        await SendJsonAsync(s, new
+                        {
+                            type = "message",
+                            from = fromUser,
+                            to = toUser,
+                            text,
+                            sentUtc = DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss")
+                        });
+                    }
+                    catch (WebSocketException) { }
+                    catch (ObjectDisposedException) { }
+                    catch { }
+                }
+
+                try
+                {
+                    await SendUnreadCountAsync(toUser);
+                }
+                catch { }
+            }
+
+            if (_clients.TryGetValue(fromUser, out var senderSockets))
+            {
+                foreach (var s in senderSockets)
+                {
+                    if (s.State != WebSocketState.Open)
+                        continue;
+
+                    try
+                    {
+                        await SendJsonAsync(s, new
+                        {
+                            type = "sent",
+                            from = fromUser,
+                            to = toUser,
+                            text,
+                            sentUtc = DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss")
+                        });
+                    }
+                    catch (WebSocketException) { }
+                    catch (ObjectDisposedException) { }
+                    catch { }
+                }
+            }
+
+
+
+
+            // ✅ PUSH NOTIFICATION (ALL DEVICES)
+            using var scopePush = _scopeFactory.CreateScope();
+            var repo2 = scopePush.ServiceProvider.GetRequiredService<ChatRepository>();
+            var pushService = scopePush.ServiceProvider.GetRequiredService<FirebaseNotificationService>();
+
+            var tokenResponse = await repo2.GetFcmTokenAsync(toUser);
+
+            string usertext = text ?? "";
+            if (tokenResponse.ErrorCode == ResponseStatus.Success &&
+                tokenResponse.Result != null &&
+                tokenResponse.Result.Any())
+            {
+                foreach (var tokenInfo in tokenResponse.Result)
+                {
+                    await pushService.SendPushAsync(
+                        tokenInfo.FCMToken,
+                        fromUser.ToUpper(),
+                        toUser.ToUpper(),
+                        text.Length > 200 ? text.Substring(0, 200) + "..." : text,
+                        tokenInfo.DeviceType
+                    );
+                }
+            }
+
+            // ADMIN AUTO REPLY (MESSAGE + NOTIFICATION)
+            if (!string.IsNullOrEmpty(admin))
+            {
+                string text1 = _autoReplyService.GetAutoReply(text); 
+
+                //1. SAVE AUTO REPLY IN DB
+                await repo.SaveMessageAsync(toUser, fromUser, text1);
+
+                //2. SEND AUTO REPLY VIA WEBSOCKET (ALL DEVICES)
+                if (_clients.TryGetValue(fromUser, out var adminSockets))
+                {
+                    foreach (var s in adminSockets)
+                    {
+                        if (s.State == WebSocketState.Open)
+                        {
+                            await SendJsonAsync(s, new
+                            {
+                                type = "message",
+                                from = toUser,     // admin side
+                                to = fromUser,
+                                text = text1,
+                                sentUtc = DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss")
+                        });
+                        }
+                    }
+
+                    await SendUnreadCountAsync(fromUser);
+                }
+                // 3. SEND AUTO REPLY TO ADMIN ALSO (REFLECT ON ADMIN SCREEN)
+                if (_clients.TryGetValue(toUser, out var adminSockets1))
+                {
+                    foreach (var s in adminSockets1)
+                    {
+                        if (s.State == WebSocketState.Open)
+                        {
+                            await SendJsonAsync(s, new
+                            {
+                                type = "sent",
+                                from = toUser,   // ADMIN
+                                to = fromUser,
+                                text = text1,
+                                sentUtc = DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss")
+
+                        });
+                        }
+                    }
+
+                    await SendUnreadCountAsync(toUser);
+                }
+
+                //4. SEND AUTO REPLY VIA PUSH NOTIFICATION (ALL DEVICES)
+                using var scopePush1 = _scopeFactory.CreateScope();
+                var repo21 = scopePush1.ServiceProvider.GetRequiredService<ChatRepository>();
+                var pushService1 = scopePush1.ServiceProvider.GetRequiredService<FirebaseNotificationService>();
+
+                var tokenResponse1 = await repo21.GetFcmTokenAsync(fromUser);
+
+                if (tokenResponse1.ErrorCode == ResponseStatus.Success &&
+                    tokenResponse1.Result != null &&
+                    tokenResponse1.Result.Any())
+                {
+                    foreach (var tokenInfo in tokenResponse1.Result)
+                    {
+                        string fcmToken = tokenInfo.FCMToken;
+                        string deviceType = tokenInfo.DeviceType;
+
+                        _logger.LogInformation(
+                            "🔔 AUTO REPLY PUSH | ToUser: {ToUser} | FromUser: {FromUser} | Device: {Device} | Token: {Token} | Message: {Message}",
+                            fromUser, toUser, deviceType, fcmToken, text1
+                        );
+
+                        var pushResult = await pushService1.SendPushAsync(
+                            fcmToken,
+                            toUser.ToUpper(),   // Title will be admin name
+                            fromUser.ToUpper(),
+                            text1.Length > 200 ? text1.Substring(0, 200) + "..." : text1,
+                            deviceType
+                        );
+
+                        if (pushResult.ErrorCode == ResponseStatus.Success)
+                        {
+                            _logger.LogInformation(
+                                "✅ AUTO REPLY PUSH SUCCESS | ToUser: {ToUser} | Device: {Device}",
+                                fromUser, deviceType
+                            );
+                        }
+                        else
+                        {
+                            _logger.LogError(
+                                "❌ AUTO REPLY PUSH FAILED | ToUser: {ToUser} | Device: {Device} | Error: {Error}",
+                                fromUser, deviceType, pushResult.ErrorMessage
+                            );
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("⚠️ No active FCM token found for AUTO REPLY user {user}", fromUser);
+                }
+            }
+
+        }
+
+        private async Task SendUnreadCountAsync(string userId, string ptouser = "")
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var repo = scope.ServiceProvider.GetRequiredService<ChatRepository>();
+
+                var count = await repo.GetUnreadCountAsync(userId, ptouser);
+
+                if (_clients.TryGetValue(userId, out var sockets))
+                {
+                    foreach (var s in sockets)
+                    {
+                        if (s.State == WebSocketState.Open)
+                        {
+                            await SendJsonAsync(s, new { type = "unreadCount", count });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to send unread count to {user}", userId);
+            }
+        }
+
+        private static Task SendJsonAsync(WebSocket socket, object obj, CancellationToken ct = default)
+        {
+            var json = JsonSerializer.Serialize(obj);
+            var bytes = Encoding.UTF8.GetBytes(json);
+
+            return socket.SendAsync(
+                new ArraySegment<byte>(bytes),
+                WebSocketMessageType.Text,
+                true,
+                ct
+            );
+        }
+    }
+}

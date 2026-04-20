@@ -1,0 +1,938 @@
+<!-- Modern Customer Chat Interface -->
+<div class="customer-chat-container">
+    <!-- Chat Header -->
+    <div class="chat-header-main">
+        <div class="chat-header-content">
+            <div class="shop-avatar">
+                <span class="material-symbols-outlined">storefront</span>
+            </div>
+            <div class="shop-info">
+                <h3>JMW Jewellery</h3>
+                <p id="shop-status" class="shop-status">
+                    <span class="status-indicator"></span>
+                    <span>Online</span>
+                </p>
+            </div>
+        </div>
+        <div class="chat-header-actions">
+            <button class="btn-icon-gold" onclick="refreshCustomerChat()" title="Refresh">
+                <span class="material-symbols-outlined">refresh</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="customer-messages-area" id="customer-messages-area">
+        <div class="messages-wrapper" id="customer-messages-wrapper">
+            <div class="welcome-message">
+                <div class="welcome-icon">
+                    <span class="material-symbols-outlined">chat_bubble</span>
+                </div>
+                <h4>Start a conversation</h4>
+                <p>We're here to help with your jewelry needs!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Input -->
+    <div class="customer-input-container">
+        <form id="customer-message-form" onsubmit="sendCustomerMessage(event)">
+            <div class="input-wrapper">
+                <button type="button" class="btn-icon-gold" title="Attach Image">
+                    <span class="material-symbols-outlined">image</span>
+                </button>
+                <input 
+                    type="text" 
+                    class="customer-message-input" 
+                    id="customer-message-input"
+                    placeholder="Type your message..."
+                    autocomplete="off"
+                    required>
+                <button type="button" class="btn-icon-gold" title="Emoji">
+                    <span class="material-symbols-outlined">sentiment_satisfied</span>
+                </button>
+            </div>
+            <button type="submit" class="btn-send-gold" id="btn-send-customer">
+                <span class="material-symbols-outlined">send</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Quick Actions (Optional) -->
+    <div class="quick-actions-bar" id="quick-actions" style="display: none;">
+        <button class="quick-action-btn" onclick="sendQuickMessage('I want to place an order')">
+            <span class="material-symbols-outlined">shopping_bag</span>
+            Place Order
+        </button>
+        <button class="quick-action-btn" onclick="sendQuickMessage('What are today\'s gold rates?')">
+            <span class="material-symbols-outlined">trending_up</span>
+            Gold Rates
+        </button>
+        <button class="quick-action-btn" onclick="sendQuickMessage('I need a custom design')">
+            <span class="material-symbols-outlined">diamond</span>
+            Custom Design
+        </button>
+    </div>
+</div>
+
+<style>
+/* Customer Chat Container */
+.customer-chat-container {
+    height: calc(100vh - 140px);
+    display: flex;
+    flex-direction: column;
+    background: #f9fafb;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Chat Header */
+.chat-header-main {
+    background: linear-gradient(135deg, #775a19 0%, #c5a059 100%);
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(119, 90, 25, 0.2);
+}
+
+.chat-header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.shop-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #775a19;
+    font-size: 32px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.shop-info h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    font-family: 'Noto Serif', serif;
+}
+
+.shop-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 0 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.chat-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon-gold {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon-gold:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Messages Area */
+.customer-messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    background: #f9fafb;
+}
+
+.messages-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Welcome Message */
+.welcome-message {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.welcome-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+}
+
+.welcome-icon .material-symbols-outlined {
+    font-size: 56px;
+    color: #775a19;
+}
+
+.welcome-message h4 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+.welcome-message p {
+    color: #6b7280;
+    margin: 0;
+    font-size: 15px;
+}
+
+/* Message Bubbles */
+.customer-message-bubble {
+    display: flex;
+    gap: 12px;
+    max-width: 80%;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.customer-message-bubble.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.customer-message-bubble.received {
+    align-self: flex-start;
+}
+
+.customer-message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+    color: white;
+}
+
+.customer-message-bubble.sent .customer-message-avatar {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.customer-message-bubble.received .customer-message-avatar {
+    background: linear-gradient(135deg, #775a19 0%, #c5a059 100%);
+}
+
+.customer-message-content {
+    background: white;
+    padding: 14px 18px;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.customer-message-bubble.sent .customer-message-content {
+    background: linear-gradient(135deg, #775a19 0%, #c5a059 100%);
+    color: white;
+}
+
+.customer-message-text {
+    margin: 0 0 6px 0;
+    line-height: 1.6;
+    word-wrap: break-word;
+    font-size: 15px;
+}
+
+.customer-message-time {
+    font-size: 11px;
+    color: #9ca3af;
+    display: block;
+}
+
+.customer-message-bubble.sent .customer-message-time {
+    color: rgba(255, 255, 255, 0.8);
+    text-align: right;
+}
+
+/* Date Divider */
+.customer-date-divider {
+    text-align: center;
+    margin: 28px 0;
+    position: relative;
+}
+
+.customer-date-divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: #e5e7eb;
+}
+
+.customer-date-divider span {
+    position: relative;
+    background: #f9fafb;
+    padding: 6px 20px;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Message Input */
+.customer-input-container {
+    padding: 20px 24px;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    position: relative;
+    z-index: 100;
+    flex-shrink: 0;
+}
+
+#customer-message-form {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f3f4f6;
+    border-radius: 28px;
+    padding: 8px 16px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    min-height: 52px;
+}
+
+.input-wrapper:focus-within {
+    border-color: #d4af37;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+}
+
+.customer-message-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    padding: 10px 0;
+    outline: none;
+    color: #111827;
+    font-family: inherit;
+}
+
+.customer-message-input::placeholder {
+    color: #9ca3af;
+}
+
+.btn-send-gold {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #775a19 0%, #c5a059 100%);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 16px rgba(119, 90, 25, 0.3);
+}
+
+.btn-send-gold:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(119, 90, 25, 0.5);
+}
+
+.btn-send-gold:active {
+    transform: scale(0.95);
+}
+
+.btn-send-gold:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: scale(1);
+}
+
+/* Quick Actions Bar */
+.quick-actions-bar {
+    padding: 16px 24px;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.quick-action-btn:hover {
+    border-color: #775a19;
+    color: #775a19;
+    background: #fef3c7;
+}
+
+.quick-action-btn .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    gap: 12px;
+    max-width: 80px;
+    padding: 16px 20px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    align-self: flex-start;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9ca3af;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Scrollbar Styling */
+.customer-messages-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.customer-messages-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.customer-messages-area::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.customer-messages-area::-webkit-scrollbar-thumb:hover {
+    background: #c5a059;
+}
+
+/* Responsive */
+/* Large Desktop (> 1440px) */
+@media (min-width: 1440px) {
+    .customer-chat-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .messages-wrapper {
+        max-width: 900px;
+    }
+}
+
+/* Desktop (1024px - 1440px) */
+@media (min-width: 1024px) and (max-width: 1440px) {
+    .customer-chat-container {
+        height: calc(100vh - 120px);
+    }
+
+    .messages-wrapper {
+        max-width: 800px;
+    }
+
+    .customer-message-bubble {
+        max-width: 75%;
+    }
+}
+
+/* Tablet (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .customer-chat-container {
+        height: calc(100vh - 100px);
+    }
+
+    .chat-header-main {
+        padding: 18px 24px;
+    }
+
+    .shop-avatar {
+        width: 52px;
+        height: 52px;
+        font-size: 30px;
+    }
+
+    .shop-info h3 {
+        font-size: 19px;
+    }
+
+    .customer-messages-area {
+        padding: 20px;
+    }
+
+    .messages-wrapper {
+        max-width: 700px;
+    }
+
+    .customer-message-bubble {
+        max-width: 80%;
+    }
+
+    .customer-input-container {
+        padding: 18px 24px;
+    }
+
+    .btn-send-gold {
+        width: 50px;
+        height: 50px;
+    }
+
+    .quick-actions-bar {
+        padding: 14px 20px;
+    }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 768px) {
+    .customer-chat-container {
+        height: calc(100vh - 80px);
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .chat-header-main {
+        padding: 16px 20px;
+        border-radius: 0;
+    }
+
+    .shop-avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 28px;
+    }
+
+    .shop-info h3 {
+        font-size: 18px;
+    }
+
+    .shop-status {
+        font-size: 12px;
+    }
+
+    .customer-messages-area {
+        padding: 16px;
+    }
+
+    .customer-message-bubble {
+        max-width: 85%;
+    }
+
+    .customer-message-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+
+    .customer-message-content {
+        padding: 12px 16px;
+    }
+
+    .customer-message-text {
+        font-size: 14px;
+    }
+
+    .customer-input-container {
+        padding: 16px;
+    }
+
+    .welcome-message {
+        padding: 40px 16px;
+    }
+
+    .welcome-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .welcome-icon .material-symbols-outlined {
+        font-size: 44px;
+    }
+
+    .quick-actions-bar {
+        padding: 12px 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .quick-action-btn {
+        font-size: 12px;
+        padding: 8px 14px;
+    }
+}
+
+/* Small Mobile (< 480px) */
+@media (max-width: 480px) {
+    .customer-chat-container {
+        height: 100vh;
+    }
+
+    .chat-header-main {
+        padding: 14px 16px;
+    }
+
+    .shop-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 26px;
+    }
+
+    .shop-info h3 {
+        font-size: 16px;
+    }
+
+    .btn-icon-gold {
+        width: 36px;
+        height: 36px;
+    }
+
+    .customer-messages-area {
+        padding: 12px;
+    }
+
+    #customer-message-form {
+        gap: 8px;
+    }
+
+    .btn-send-gold {
+        width: 44px;
+        height: 44px;
+    }
+
+    .input-wrapper {
+        padding: 6px 12px;
+        min-height: 44px;
+    }
+
+    .customer-message-input {
+        font-size: 14px;
+        padding: 8px 0;
+    }
+
+    .customer-input-container {
+        padding: 12px;
+        position: sticky;
+        bottom: 0;
+        background: white;
+        z-index: 100;
+    }
+
+    .welcome-message {
+        padding: 30px 12px;
+    }
+
+    .welcome-message h4 {
+        font-size: 20px;
+    }
+
+    .welcome-message p {
+        font-size: 14px;
+    }
+
+    .customer-date-divider {
+        margin: 20px 0;
+    }
+
+    .customer-date-divider span {
+        font-size: 11px;
+        padding: 4px 12px;
+    }
+
+    .quick-actions-bar {
+        padding: 10px 12px;
+        gap: 6px;
+    }
+
+    .quick-action-btn {
+        font-size: 11px;
+        padding: 7px 12px;
+    }
+
+    .quick-action-btn .material-symbols-outlined {
+        font-size: 18px;
+    }
+}
+
+/* Landscape Mode (Small Height) */
+@media (max-height: 500px) and (orientation: landscape) {
+    .customer-chat-container {
+        height: 100vh;
+    }
+
+    .chat-header-main {
+        padding: 10px 16px;
+    }
+
+    .shop-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+    }
+
+    .customer-messages-area {
+        padding: 12px;
+    }
+
+    .customer-input-container {
+        padding: 10px 16px;
+    }
+
+    .btn-send-gold {
+        width: 40px;
+        height: 40px;
+    }
+
+    .quick-actions-bar {
+        padding: 8px 12px;
+    }
+}
+
+/* Loading State */
+.loading-messages {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-top-color: #d4af37;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+// Cleanup on unload
+window.addEventListener('beforeunload', () => {
+    if (customerChatInterval) {
+        clearInterval(customerChatInterval);
+    }
+});
+</script>
+
+<script>
+// Customer Chat WebSocket Integration
+let customerChatManager = null;
+let initRetryCount = 0;
+const MAX_INIT_RETRIES = 3;
+
+function initializeCustomerChat() {
+    console.log('🚀 Initializing customer WebSocket chat...');
+    
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+        console.error('❌ No user logged in');
+        return;
+    }
+    
+    // Check if ChatManager is loaded
+    if (typeof ChatManager === 'undefined') {
+        console.error('❌ ChatManager not loaded. Make sure chat-manager-websocket.js is included.');
+        
+        // Retry initialization
+        if (initRetryCount < MAX_INIT_RETRIES) {
+            initRetryCount++;
+            console.log(`🔄 Retrying initialization (${initRetryCount}/${MAX_INIT_RETRIES}) in 1 second...`);
+            setTimeout(initializeCustomerChat, 1000);
+        } else {
+            console.error('❌ Failed to initialize chat after multiple retries');
+        }
+        return;
+    }
+    
+    if (!customerChatManager) {
+        try {
+            customerChatManager = new ChatManager(false);
+            customerChatManager.initialize();
+            console.log('✅ Customer WebSocket connected');
+            initRetryCount = 0; // Reset counter on success
+        } catch (error) {
+            console.error('❌ Error initializing ChatManager:', error);
+            customerChatManager = null;
+            
+            // Retry on error
+            if (initRetryCount < MAX_INIT_RETRIES) {
+                initRetryCount++;
+                console.log(`🔄 Retrying after error (${initRetryCount}/${MAX_INIT_RETRIES})...`);
+                setTimeout(initializeCustomerChat, 2000);
+            }
+        }
+    }
+}
+
+async function sendCustomerMessage(event) {
+    if (event) event.preventDefault();
+    
+    const input = document.getElementById('customer-message-input');
+    if (!input) return;
+    
+    if (!customerChatManager) {
+        console.error('❌ Chat not initialized. Attempting to reconnect...');
+        initializeCustomerChat();
+        return;
+    }
+    
+    const text = input.value.trim();
+    if (!text) return;
+    
+    try {
+        const success = await customerChatManager.sendMessage(text);
+        if (success) {
+            input.value = '';
+            input.focus();
+        } else {
+            console.error('❌ Failed to send message');
+        }
+    } catch (error) {
+        console.error('❌ Error sending message:', error);
+    }
+}
+
+async function sendQuickMessage(message) {
+    if (!customerChatManager) {
+        console.error('❌ Chat not initialized');
+        initializeCustomerChat();
+        return;
+    }
+    
+    try {
+        const success = await customerChatManager.sendMessage(message);
+        if (success) {
+            const quickActions = document.getElementById('quick-actions');
+            if (quickActions) quickActions.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('❌ Error sending quick message:', error);
+    }
+}
+
+function refreshCustomerChat() {
+    console.log('🔄 Refreshing chat connection...');
+    if (customerChatManager) {
+        customerChatManager.destroy();
+        customerChatManager = null;
+    }
+    initRetryCount = 0;
+    initializeCustomerChat();
+}
+
+// Auto-initialize
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(initializeCustomerChat, 500));
+} else {
+    setTimeout(initializeCustomerChat, 500);
+}
+
+// Reconnect on window focus (handles laptop wake, tab activation)
+window.addEventListener('focus', () => {
+    if (customerChatManager && customerChatManager.connectionState === 'disconnected') {
+        console.log('🔄 Window focused - reconnecting chat...');
+        refreshCustomerChat();
+    }
+});
+
+// Cleanup
+window.addEventListener('beforeunload', () => {
+    if (customerChatManager) {
+        customerChatManager.destroy();
+        customerChatManager = null;
+    }
+});
+</script>

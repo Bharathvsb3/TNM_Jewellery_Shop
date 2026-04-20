@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Gold Rate Skip Flag</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #c5a059;
+        }
+        button {
+            background: #c5a059;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #a68849;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Gold Rate Popup - Debug Tool</h1>
+        
+        <div class="info">
+            <strong>📋 Use this tool to:</strong>
+            <ul>
+                <li>Clear the "skip for today" flag</li>
+                <li>Force the gold rate popup to appear</li>
+                <li>Check current localStorage status</li>
+            </ul>
+        </div>
+
+        <button onclick="clearSkipFlag()">Clear Skip Flag</button>
+        <button onclick="checkStatus()">Check Status</button>
+        <button onclick="goToDashboard()">Go to Dashboard</button>
+        
+        <div id="message"></div>
+        
+        <hr style="margin: 30px 0">
+        
+        <h3>Manual Steps:</h3>
+        <ol>
+            <li><strong>Stop your API</strong> (Ctrl+C in terminal)</li>
+            <li><strong>Restart it:</strong> <code>dotnet run</code></li>
+            <li>Look for: <code>✓ Gold24KRate column migration completed!</code></li>
+            <li>Click "Clear Skip Flag" button above</li>
+            <li>Click "Go to Dashboard"</li>
+            <li>Popup should appear! 🎉</li>
+        </ol>
+    </div>
+
+    <script>
+        function clearSkipFlag() {
+            localStorage.removeItem('skipGoldRatePopup');
+            document.getElementById('message').innerHTML = '<div class="success">✓ Skip flag cleared! Now reload the dashboard.</div>';
+        }
+
+        function checkStatus() {
+            const skipFlag = localStorage.getItem('skipGoldRatePopup');
+            const msg = document.getElementById('message');
+            
+            if (skipFlag) {
+                const skipDate = new Date(skipFlag);
+                msg.innerHTML = `<div style="color: orange;"><strong>⚠ Skip flag is SET</strong><br>Skipped until: ${skipDate.toLocaleString()}</div>`;
+            } else {
+                msg.innerHTML = '<div class="success">✓ No skip flag found. Popup should appear on dashboard.</div>';
+            }
+        }
+
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Check status on load
+        window.onload = () => {
+            checkStatus();
+        };
+    </script>
+</body>
+</html>

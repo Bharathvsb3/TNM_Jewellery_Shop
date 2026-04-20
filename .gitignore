@@ -1,0 +1,84 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Database files - Include main DB, exclude backups
+*.db-shm
+*.db-wal
+*_backup*.db
+jewelleryshop_backup*.db
+jewelleryshop - Copy.db
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Rm]64/
+Build/
+
+# Rider
+.idea/
+
+# VS Code & AI Files
+.vscode/
+.copilot/
+*.jsonl
+transcripts/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migration & Setup Scripts
+*.ps1
+*.sql
+*.bat
+*.cs
+!JewelleryShopAPI/**/*.cs
+
+# AI-Generated Documentation (keep only essential docs)
+ADMIN_CHAT_*.md
+API_*.md
+AUTO_MIGRATION_*.md
+CHAT_*.md
+COMPLETE_*.md
+CRAFT_*.md
+CRAFTSMAN_*.md
+CUSTOMER_*.md
+DELETE_*.md
+DELIVERY_*.md
+DEPLOYMENT_*.md
+ENQUIRY_*.md
+FEATURE_*.md
+GOLD_*.md
+IMPLEMENTATION_*.md
+METAL_*.md
+ORDER_*.md
+PAGES_*.md
+RESPONSIVE_*.md
+SQL_*.txt
+STATUS.md
+STRUCTURE.md
+TESTING_*.md
+TEST_*.md
+WEBSOCKET_*.md
+
+# Temporary migration tools
+DatabaseMigration/
+RunMaterialReturnsMigration.cs
+migrate-returns.ps1

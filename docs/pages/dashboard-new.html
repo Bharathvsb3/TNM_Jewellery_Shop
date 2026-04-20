@@ -1,0 +1,329 @@
+<!-- Dashboard Summary Header -->
+<section>
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h3 class="text-3xl font-bold serif-font text-on-surface">Atelier Overview</h3>
+            <p class="text-outline mt-1 font-body">Refining today's craft and client engagements.</p>
+        </div>
+        <div class="flex gap-4">
+            <button class="px-6 py-3 border border-outline-variant/30 text-sm uppercase tracking-widest font-bold hover:bg-surface-container-low transition-colors">
+                Download Report
+            </button>
+            <button class="px-6 py-3 golden-gradient text-white text-sm uppercase tracking-widest font-bold shadow-lg shadow-primary/20" onclick="window.location.hash='orders'">
+                New Creation
+            </button>
+        </div>
+    </div>
+
+    <!-- Today's Gold & Silver Rates - Top Banner -->
+    <div class="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-300 rounded-lg p-4 shadow hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="material-symbols-outlined text-2xl text-yellow-600">diamond</span>
+                <span class="text-[9px] font-bold text-yellow-700 uppercase tracking-wider">24K</span>
+            </div>
+            <p class="text-[10px] font-bold text-yellow-900 mb-1">💎 Pure Gold</p>
+            <p class="text-2xl font-bold serif-font text-yellow-800" id="top-gold-24k">--</p>
+            <div class="flex items-center justify-between mt-1">
+                <p class="text-[9px] text-yellow-700">per gram</p>
+                <p class="text-[9px] text-yellow-600" id="top-rate-time-24k">--</p>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 rounded-lg p-4 shadow hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="material-symbols-outlined text-2xl text-amber-600">payments</span>
+                <span class="text-[9px] font-bold text-amber-700 uppercase tracking-wider">22K</span>
+            </div>
+            <p class="text-[10px] font-bold text-amber-900 mb-1">💰 Standard Gold</p>
+            <p class="text-2xl font-bold serif-font text-amber-800" id="top-gold-916">--</p>
+            <div class="flex items-center justify-between mt-1">
+                <p class="text-[9px] text-amber-700">per gram</p>
+                <p class="text-[9px] text-amber-600" id="top-rate-time-916">--</p>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-300 rounded-lg p-4 shadow hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="material-symbols-outlined text-2xl text-gray-500">paid</span>
+                <span class="text-[9px] font-bold text-gray-700 uppercase tracking-wider">Ag</span>
+            </div>
+            <p class="text-[10px] font-bold text-gray-900 mb-1">💵 Silver</p>
+            <p class="text-2xl font-bold serif-font text-gray-800" id="top-silver">--</p>
+            <div class="flex items-center justify-between mt-1">
+                <p class="text-[9px] text-gray-700">per gram</p>
+                <p class="text-[9px] text-gray-600" id="top-rate-time-silver">--</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="bg-surface-container-lowest p-8 relative overflow-hidden group">
+            <div class="relative z-10">
+                <span class="text-outline uppercase tracking-widest text-[10px] font-bold block mb-4">Total Orders</span>
+                <p class="text-4xl serif-font text-on-surface mb-2" id="total-orders">0</p>
+                <span class="text-emerald-600 text-xs flex items-center gap-1 font-bold">
+                    <span class="material-symbols-outlined text-sm">trending_up</span> Active this month
+                </span>
+            </div>
+            <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-surface-container-low opacity-40 group-hover:text-primary-container transition-colors duration-500">shopping_bag</span>
+        </div>
+        
+        <div class="bg-surface-container-lowest p-8 relative overflow-hidden group">
+            <div class="relative z-10">
+                <span class="text-outline uppercase tracking-widest text-[10px] font-bold block mb-4">New Enquiries</span>
+                <p class="text-4xl serif-font text-on-surface mb-2" id="pending-enquiries">0</p>
+                <span class="text-primary text-xs flex items-center gap-1 font-bold">
+                    <span class="material-symbols-outlined text-sm">pending</span> Awaiting response
+                </span>
+            </div>
+            <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-surface-container-low opacity-40 group-hover:text-primary-container transition-colors duration-500">contact_support</span>
+        </div>
+        
+        <div class="bg-surface-container-lowest p-8 relative overflow-hidden group">
+            <div class="relative z-10">
+                <span class="text-outline uppercase tracking-widest text-[10px] font-bold block mb-4">Premium Clients</span>
+                <p class="text-4xl serif-font text-on-surface mb-2" id="total-customers">0</p>
+                <span class="text-emerald-600 text-xs flex items-center gap-1 font-bold">
+                    <span class="material-symbols-outlined text-sm">add_circle</span> Growing
+                </span>
+            </div>
+            <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-surface-container-low opacity-40 group-hover:text-primary-container transition-colors duration-500">person_celebrate</span>
+        </div>
+        
+        <div class="bg-surface-container-lowest p-8 relative overflow-hidden group">
+            <div class="relative z-10">
+                <span class="text-outline uppercase tracking-widest text-[10px] font-bold block mb-4">Active Artisans</span>
+                <p class="text-4xl serif-font text-on-surface mb-2" id="total-workers">0</p>
+                <span class="text-outline text-xs flex items-center gap-1 font-bold">
+                    <span class="material-symbols-outlined text-sm">engineering</span> Craftsmen
+                </span>
+            </div>
+            <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-surface-container-low opacity-40 group-hover:text-primary-container transition-colors duration-500">engineering</span>
+        </div>
+    </div>
+</section>
+
+<!-- Activity & Quick Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-12">
+    <!-- Activity Table Section -->
+    <section class="lg:col-span-2">
+        <div class="flex items-center justify-between mb-8">
+            <h4 class="text-xl font-bold serif-font">Recent Transactions</h4>
+            <a class="text-xs uppercase tracking-widest text-primary border-b border-primary/30 pb-1 font-bold" href="#orders">View All Orders</a>
+        </div>
+        <div class="bg-surface-container-lowest overflow-hidden border border-outline-variant/10">
+            <table class="w-full text-left">
+                <thead class="bg-surface-container-low border-b border-outline-variant/10">
+                    <tr>
+                        <th class="py-5 px-6 text-[10px] uppercase tracking-widest font-bold text-outline">Reference</th>
+                        <th class="py-5 px-6 text-[10px] uppercase tracking-widest font-bold text-outline">Client</th>
+                        <th class="py-5 px-6 text-[10px] uppercase tracking-widest font-bold text-outline">Status</th>
+                        <th class="py-5 px-6 text-[10px] uppercase tracking-widest font-bold text-outline">Value</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/5" id="recent-orders-tbody">
+                    <tr>
+                        <td colspan="4" class="py-6 px-6 text-center text-outline">
+                            <span class="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
+                            <p class="mt-2">Loading orders...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    
+    <!-- Quick Action Sidebar -->
+    <section>
+        <div class="mb-8">
+            <h4 class="text-xl font-bold serif-font">Immediate Actions</h4>
+        </div>
+        <div class="space-y-4">
+            <button class="w-full flex items-center justify-between p-6 bg-surface-container-highest hover:bg-primary-container group transition-all" onclick="window.location.hash='customers'">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined">person_add</span>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm font-bold text-on-surface">Add New Customer</p>
+                        <p class="text-[10px] text-outline group-hover:text-on-primary-container transition-colors">Register for Atelier services</p>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-outline group-hover:text-on-primary-container">chevron_right</span>
+            </button>
+            
+            <button class="w-full flex items-center justify-between p-6 bg-surface-container-highest hover:bg-primary-container group transition-all" onclick="window.location.hash='orders'">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined">add_shopping_cart</span>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm font-bold text-on-surface">Create New Order</p>
+                        <p class="text-[10px] text-outline group-hover:text-on-primary-container transition-colors">Generate invoice & design brief</p>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-outline group-hover:text-on-primary-container">chevron_right</span>
+            </button>
+            
+            <button class="w-full flex items-center justify-between p-6 bg-surface-container-highest hover:bg-primary-container group transition-all" onclick="window.location.hash='enquiries'">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined">contact_support</span>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm font-bold text-on-surface">Manage Enquiries</p>
+                        <p class="text-[10px] text-outline group-hover:text-on-primary-container transition-colors">View pending requests</p>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-outline group-hover:text-on-primary-container">chevron_right</span>
+            </button>
+            
+            <button class="w-full flex items-center justify-between p-6 bg-surface-container-highest hover:bg-primary-container group transition-all" onclick="window.location.hash='gold-tracking'">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined">trending_up</span>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm font-bold text-on-surface">Gold Tracking</p>
+                        <p class="text-[10px] text-outline group-hover:text-on-primary-container transition-colors">Update daily rates</p>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-outline group-hover:text-on-primary-container">chevron_right</span>
+            </button>
+            
+            <button class="w-full flex items-center justify-between p-6 bg-surface-container-highest hover:bg-primary-container group transition-all" onclick="window.location.hash='craft-work'">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined">engineering</span>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm font-bold text-on-surface">Craft Work</p>
+                        <p class="text-[10px] text-outline group-hover:text-on-primary-container transition-colors">Assign to craftsmen</p>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-outline group-hover:text-on-primary-container">chevron_right</span>
+            </button>
+        </div>
+    </section>
+</div>
+
+<script>
+// Load dashboard data
+(async function() {
+    try {
+        // Load stats
+        const [ordersData, customersData, workersData] = await Promise.all([
+            apiRequest(`${API_BASE_URL}/Orders`),
+            apiRequest(`${API_BASE_URL}/Customers`),
+            apiRequest(`${API_BASE_URL}/Workers`)
+        ]);
+        
+        if (ordersData) {
+            document.getElementById('total-orders').textContent = ordersData.length || 0;
+            
+            // Load recent orders
+            const recentOrders = ordersData.slice(0, 5);
+            const tbody = document.getElementById('recent-orders-tbody');
+            if (recentOrders.length > 0) {
+                tbody.innerHTML = recentOrders.map(order => `
+                    <tr class="hover:bg-surface-container-low/30 transition-colors">
+                        <td class="py-6 px-6">
+                            <p class="text-sm font-bold text-on-surface">ORD-${order.orderId}</p>
+                            <p class="text-[10px] text-outline">${order.jewelryType || 'Custom Piece'}</p>
+                        </td>
+                        <td class="py-6 px-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-primary-fixed-dim flex items-center justify-center text-[10px] font-bold text-on-primary-fixed">
+                                    ${(order.customerName || 'C').substring(0, 2).toUpperCase()}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium">${order.customerName || 'Customer'}</p>
+                                    <p class="text-[10px] text-outline">Client</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-6 px-6">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-tighter">
+                                ${order.status || 'Pending'}
+                            </span>
+                        </td>
+                        <td class="py-6 px-6">
+                            <p class="text-sm font-bold serif-font">₹ ${(order.totalAmount || 0).toLocaleString()}</p>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-6 px-6 text-center text-outline">No orders yet</td></tr>';
+            }
+        }
+        
+        if (customersData) {
+            document.getElementById('total-customers').textContent = customersData.length || 0;
+        }
+        
+        if (workersData) {
+            document.getElementById('total-workers').textContent = workersData.length || 0;
+        }
+        
+        // Load gold rates with smart logic (today's Evening > today's Morning > previous latest)
+        const [todayRates, latestRate] = await Promise.all([
+            apiRequest(`${API_BASE_URL}/GoldRates/today`),
+            apiRequest(`${API_BASE_URL}/GoldRates/latest`)
+        ]);
+        
+        let displayRate = null;
+        
+        // Smart logic: prioritize today's Evening > today's Morning > previous latest
+        if (todayRates && todayRates.length > 0) {
+            // Check if today has Evening rate
+            const eveningRate = todayRates.find(r => r.timeSlot === 'Evening');
+            if (eveningRate) {
+                displayRate = eveningRate;
+            } else {
+                // Use today's Morning rate
+                const morningRate = todayRates.find(r => r.timeSlot === 'Morning');
+                if (morningRate) {
+                    displayRate = morningRate;
+                }
+            }
+        }
+        
+        // Fallback to absolute latest if no today's rate
+        if (!displayRate && latestRate) {
+            displayRate = latestRate;
+        }
+        
+        if (displayRate) {
+            // Top banner rates
+            const topGold24kEl = document.getElementById('top-gold-24k');
+            const topGold916El = document.getElementById('top-gold-916');
+            const topSilverEl = document.getElementById('top-silver');
+            
+            if (topGold24kEl && displayRate.gold24KRate) {
+                topGold24kEl.textContent = `₹${displayRate.gold24KRate.toFixed(2)}`;
+            }
+            if (topGold916El && displayRate.gold916Rate) {
+                topGold916El.textContent = `₹${displayRate.gold916Rate.toFixed(2)}`;
+            }
+            if (topSilverEl && displayRate.silverRate) {
+                topSilverEl.textContent = `₹${displayRate.silverRate.toFixed(2)}`;
+            }
+            
+            // Format time slot for top banner
+            if (displayRate.timeSlot) {
+                const timeSlot = displayRate.timeSlot;
+                const icon = timeSlot === 'Morning' ? '☀️' : '🌙';
+                const timeText = `${icon} ${timeSlot}`;
+                document.querySelectorAll('[id^="top-rate-time"]').forEach(el => {
+                    el.textContent = timeText;
+                });
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+})();
+</script>

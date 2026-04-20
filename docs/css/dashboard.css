@@ -1,0 +1,353 @@
+/* 
+===========================================
+   DASHBOARD LAYOUT - PREMIUM DESIGN
+===========================================
+*/
+
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+    background: var(--gray-50);
+}
+
+/* === SIDEBAR === */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, var(--blue-primary), var(--blue-dark));
+    color: var(--white);
+    box-shadow: var(--shadow-xl);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    z-index: 100;
+    transition: transform var(--transition-base);
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shop-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.shop-logo .material-symbols-outlined {
+    font-size: 36px;
+    color: var(--gold-primary);
+}
+
+.shop-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: var(--font-serif);
+}
+
+.sidebar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--white);
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.sidebar-toggle .material-symbols-outlined {
+    font-size: 24px;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem 0;
+    overflow-y: auto;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--gold-primary);
+    transform: scaleX(0);
+    transition: transform var(--transition-fast);
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+}
+
+.nav-item.active {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--white);
+}
+
+.nav-item.active::before {
+    transform: scaleX(1);
+}
+
+.nav-item .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.nav-text {
+    font-size: 0.9375rem;
+    font-weight: 500;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem;
+    background: rgba(224, 17, 95, 0.2);
+    border: 1px solid rgba(224, 17, 95, 0.3);
+    border-radius: var(--radius-md);
+    color: var(--white);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.logout-btn:hover {
+    background: var(--accent-ruby);
+}
+
+.logout-btn .material-symbols-outlined {
+    font-size: 24px;
+}
+
+/* === MAIN CONTENT === */
+.main-content {
+    margin-left: 280px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top Navbar */
+.top-navbar {
+    background: var(--white);
+    padding: 1.25rem 2rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--gray-700);
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.mobile-menu-btn .material-symbols-outlined {
+    font-size: 28px;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    color: var(--gray-900);
+    font-family: var(--font-serif);
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* Gold Rate Display */
+.gold-rate-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.gold-rate-display .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--gray-800);
+}
+
+.rate-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.rate-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    font-family: var(--font-serif);
+}
+
+/* User Menu */
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+}
+
+.user-avatar .material-symbols-outlined {
+    font-size: 40px;
+    color: var(--blue-primary);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.user-role {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+}
+
+/* === CONTENT AREA === */
+.content-area {
+    flex: 1;
+    padding: 2rem;
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+}
+
+.mobile-overlay.active {
+    display: block;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 240px 1fr;
+    }
+
+    .sidebar {
+        width: 240px;
+    }
+
+    .main-content {
+        margin-left: 240px;
+    }
+
+    .gold-rate-display {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .sidebar-toggle {
+        display: block;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .top-navbar {
+        padding: 1rem 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .user-info {
+        display: none;
+    }
+
+    .content-area {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-area {
+        padding: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.25rem;
+    }
+}

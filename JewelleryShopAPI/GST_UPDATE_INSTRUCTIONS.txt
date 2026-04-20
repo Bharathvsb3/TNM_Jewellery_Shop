@@ -1,0 +1,22 @@
+// To run this database update:
+// 1. Stop the running API (Ctrl+C in terminal)
+// 2. Uncomment lines 3-10 in Program.cs
+// 3. Run: dotnet run
+// 4. After seeing "GST column added to Orders table!", comment out lines 3-10 again
+// 5. Restart the API: dotnet run
+
+/* In Program.cs, uncomment this section temporarily:
+
+try
+{
+    JewelleryShopAPI.DatabaseUpdater.AddGstColumnToOrders();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Database update error: {ex.Message}");
+}
+
+*/
+
+// Or use this SQL query directly in a SQLite tool:
+// ALTER TABLE Orders ADD COLUMN Gst REAL NULL;

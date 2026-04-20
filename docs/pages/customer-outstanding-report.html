@@ -1,0 +1,421 @@
+<!-- Customer Outstanding Report Page -->
+<section class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold serif-font text-on-surface flex items-center gap-3">
+                <span class="material-symbols-outlined text-4xl text-primary">summarize</span>
+                Customer Outstanding Report
+            </h1>
+            <p class="text-outline mt-1">Summary and detailed outstanding balance report</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-surface-container-low rounded-xl p-6 space-y-4">
+        <h3 class="font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined">filter_list</span>
+            Report Filters
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-bold text-on-surface mb-2">Beginning Customer</label>
+                <select id="report-start-customer" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant focus:border-primary rounded-lg">
+                    <option value="">Select Start Customer</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold text-on-surface mb-2">Ending Customer</label>
+                <select id="report-end-customer" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant focus:border-primary rounded-lg">
+                    <option value="">Select End Customer</option>
+                </select>
+            </div>
+            
+            <div class="flex items-end gap-2">
+                <button onclick="generateOutstandingReport()" class="flex-1 px-6 py-3 bg-primary hover:bg-primary-container text-white font-bold rounded-lg flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">play_arrow</span>
+                    Generate Report
+                </button>
+                <button onclick="clearReportFilters()" class="px-4 py-3 border-2 border-outline-variant hover:bg-surface-container-low rounded-lg" title="Clear">
+                    <span class="material-symbols-outlined">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Summary Table -->
+    <div id="report-summary-section" class="bg-surface-container-lowest rounded-xl overflow-hidden" style="display: none;">
+        <div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between">
+            <h3 class="font-bold text-lg text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">description</span>
+                Outstanding Summary
+                <span id="report-customer-count" class="text-sm font-normal text-outline ml-2"></span>
+            </h3>
+            <div class="flex gap-2">
+                <button onclick="printOutstandingReport('summary')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 text-sm font-bold">
+                    <span class="material-symbols-outlined text-sm">print</span>
+                    Print Summary
+                </button>
+                <button onclick="exportReportToExcel()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 text-sm font-bold">
+                    <span class="material-symbols-outlined text-sm">download</span>
+                    Export Excel
+                </button>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-surface-container-high sticky top-0 z-10">
+                    <tr class="border-b border-outline-variant/20">
+                        <th class="py-4 px-6 text-left text-xs font-bold text-on-surface uppercase tracking-wider">Customer</th>
+                        <th class="py-4 px-6 text-right text-xs font-bold text-on-surface uppercase tracking-wider">Orders</th>
+                        <th class="py-4 px-6 text-right text-xs font-bold text-on-surface uppercase tracking-wider">Total Amount</th>
+                        <th class="py-4 px-6 text-right text-xs font-bold text-on-surface uppercase tracking-wider">Total Paid</th>
+                        <th class="py-4 px-6 text-right text-xs font-bold text-on-surface uppercase tracking-wider">Outstanding</th>
+                        <th class="py-4 px-6 text-right text-xs font-bold text-on-surface uppercase tracking-wider">GST Amount</th>
+                        <th class="py-4 px-6 text-right text-xs font-bold text-on-surface uppercase tracking-wider">Wastage (g)</th>
+                        <th class="py-4 px-6 text-right text-xs font-bold text-on-surface uppercase tracking-wider">Making Charges</th>
+                        <th class="py-4 px-6 text-center text-xs font-bold text-on-surface uppercase tracking-wider">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="report-summary-tbody" class="divide-y divide-outline-variant/10">
+                    <!-- Summary rows will be inserted here -->
+                </tbody>
+                <tfoot class="bg-primary/5 border-t-2 border-primary sticky bottom-0">
+                    <tr class="font-bold">
+                        <td class="py-4 px-6 text-primary">TOTAL</td>
+                        <td class="py-4 px-6 text-right text-primary" id="total-orders">0</td>
+                        <td class="py-4 px-6 text-right text-primary" id="total-amount">₹0.00</td>
+                        <td class="py-4 px-6 text-right text-emerald-600" id="total-paid">₹0.00</td>
+                        <td class="py-4 px-6 text-right text-error" id="total-outstanding">₹0.00</td>
+                        <td class="py-4 px-6 text-right text-primary" id="total-gst">₹0.00</td>
+                        <td class="py-4 px-6 text-right text-primary" id="total-wastage">0.00g</td>
+                        <td class="py-4 px-6 text-right text-primary" id="total-making">₹0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+let reportData = [];
+
+// Load customers for dropdown
+async function loadCustomersForReport() {
+    try {
+        const customers = await apiRequest(`${API_BASE_URL}/Customers?includeInactive=false`);
+        const sortedCustomers = customers.sort((a, b) => a.name.localeCompare(b.name));
+        
+        const startSelect = document.getElementById('report-start-customer');
+        const endSelect = document.getElementById('report-end-customer');
+        
+        const options = sortedCustomers.map(c => 
+            `<option value="${c.id}">${c.name} - ${c.mobile || ''}</option>`
+        ).join('');
+        
+        startSelect.innerHTML = '<option value="">First Customer</option>' + options;
+        endSelect.innerHTML = '<option value="">Last Customer</option>' + options;
+        
+    } catch (error) {
+        console.error('Error loading customers:', error);
+        showCustomAlert('Failed to load customers', 'error');
+    }
+}
+
+// Generate outstanding report
+async function generateOutstandingReport() {
+    try {
+        const startCustomerId = document.getElementById('report-start-customer').value;
+        const endCustomerId = document.getElementById('report-end-customer').value;
+        
+        // Call the new outstanding report API endpoint
+        const requestData = {};
+        if (startCustomerId) requestData.startCustomerId = parseInt(startCustomerId);
+        if (endCustomerId) requestData.endCustomerId = parseInt(endCustomerId);
+        
+        const reportResponse = await apiRequest(`${API_BASE_URL}/Orders/outstanding-report`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        // Map API response to frontend format
+        reportData = reportResponse.map(customer => ({
+            customerId: customer.customerId,
+            customerName: customer.customerName,
+            customerMobile: customer.customerMobile,
+            orders: customer.orders,
+            totalOrders: customer.totalOrders,
+            totalAmount: customer.totalAmount,
+            totalPaid: customer.totalPaid,
+            totalOutstanding: customer.outstanding,
+            totalGST: customer.gstAmount,
+            totalWastageGrams: customer.wastageGrams,
+            totalMakingCharges: customer.makingCharges
+        }));
+        
+        renderReportSummary();
+        
+    } catch (error) {
+        console.error('Error generating report:', error);
+        showCustomAlert('Failed to generate report', 'error');
+    }
+}
+
+// Render summary table
+function renderReportSummary() {
+    const tbody = document.getElementById('report-summary-tbody');
+    const summarySection = document.getElementById('report-summary-section');
+    
+    if (reportData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-outline">No outstanding balances found</td></tr>';
+        summarySection.style.display = 'block';
+        return;
+    }
+    
+    tbody.innerHTML = reportData.map(customer => {
+        const detailRowId = `detail-row-${customer.customerId}`;
+        return `
+        <tr class="hover:bg-surface-container-low cursor-pointer transition-colors" onclick="toggleCustomerDetail('${customer.customerId}')">
+            <td class="py-4 px-6">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary customer-expand-icon" id="icon-${customer.customerId}">chevron_right</span>
+                    <div>
+                        <p class="font-bold text-on-surface">${customer.customerName}</p>
+                        <p class="text-xs text-outline">${customer.customerMobile || ''}</p>
+                    </div>
+                </div>
+            </td>
+            <td class="py-4 px-6 text-right font-semibold">${customer.totalOrders}</td>
+            <td class="py-4 px-6 text-right font-bold">${formatCurrency(customer.totalAmount)}</td>
+            <td class="py-4 px-6 text-right font-bold text-emerald-600">${formatCurrency(customer.totalPaid)}</td>
+            <td class="py-4 px-6 text-right font-bold text-error text-lg">${formatCurrency(customer.totalOutstanding)}</td>
+            <td class="py-4 px-6 text-right">${formatCurrency(customer.totalGST)}</td>
+            <td class="py-4 px-6 text-right">${customer.totalWastageGrams.toFixed(2)}g</td>
+            <td class="py-4 px-6 text-right">${formatCurrency(customer.totalMakingCharges)}</td>
+            <td class="py-4 px-6 text-center">
+                <span class="text-xs font-bold text-outline">Click to expand</span>
+            </td>
+        </tr>
+        <tr id="${detailRowId}" class="customer-detail-row hidden bg-surface-container-low/50">
+            <td colspan="9" class="p-0">
+                <div class="p-6 border-t border-outline-variant/20">
+                    <h4 class="font-bold text-primary mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined">list_alt</span>
+                        Order Details for ${customer.customerName}
+                    </h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-surface-container-high">
+                                <tr>
+                                    <th class="py-2 px-4 text-left text-xs font-bold uppercase">Order #</th>
+                                    <th class="py-2 px-4 text-left text-xs font-bold uppercase">Date</th>
+                                    <th class="py-2 px-4 text-left text-xs font-bold uppercase">Item</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">Actual Weight</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">Wastage (g)</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">Wastage (%)</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">Gold Rate</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">Making ₹</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">GST %</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">GST ₹</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">Total ₹</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">Paid ₹</th>
+                                    <th class="py-2 px-4 text-right text-xs font-bold uppercase">Outstanding ₹</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant/10">
+                                ${renderCustomerOrders(customer.orders)}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        `;
+    }).join('');
+    
+    // Update totals
+    const totals = reportData.reduce((acc, c) => ({
+        orders: acc.orders + c.totalOrders,
+        amount: acc.amount + c.totalAmount,
+        paid: acc.paid + c.totalPaid,
+        outstanding: acc.outstanding + c.totalOutstanding,
+        gst: acc.gst + c.totalGST,
+        wastage: acc.wastage + c.totalWastageGrams,
+        making: acc.making + c.totalMakingCharges
+    }), { orders: 0, amount: 0, paid: 0, outstanding: 0, gst: 0, wastage: 0, making: 0 });
+    
+    document.getElementById('total-orders').textContent = totals.orders;
+    document.getElementById('total-amount').textContent = formatCurrency(totals.amount);
+    document.getElementById('total-paid').textContent = formatCurrency(totals.paid);
+    document.getElementById('total-outstanding').textContent = formatCurrency(totals.outstanding);
+    document.getElementById('total-gst').textContent = formatCurrency(totals.gst);
+    document.getElementById('total-wastage').textContent = totals.wastage.toFixed(2) + 'g';
+    document.getElementById('total-making').textContent = formatCurrency(totals.making);
+    
+    document.getElementById('report-customer-count').textContent = `(${reportData.length} customers)`;
+    
+    summarySection.style.display = 'block';
+}
+
+// Render customer orders for accordion detail view
+function renderCustomerOrders(orders) {
+    return orders.map(order => {
+        const totalPrice = parseFloat(order.totalPrice || 0);
+        const advance = parseFloat(order.advanceAmount || 0);
+        const adjustmentAmount = parseFloat(order.adjustmentAmount || 0);
+        
+        // Calculate total paid and outstanding
+        let totalPaid = 0;
+        let outstanding = 0;
+        
+        if (adjustmentAmount > 0) {
+            // Positive adjustment = pending payment
+            outstanding = adjustmentAmount;
+            totalPaid = totalPrice - adjustmentAmount;
+        } else if (adjustmentAmount < 0) {
+            // Negative adjustment = waiver/discount applied
+            outstanding = 0;
+            totalPaid = totalPrice; // Considered fully paid with discount
+        } else {
+            // No adjustment (old format or exact payment)
+            const balanceAmount = parseFloat(order.balanceAmount || 0);
+            totalPaid = advance;
+            outstanding = Math.max(0, totalPrice - totalPaid);
+        }
+        
+        const gstPercent = parseFloat(order.gst || 0);
+        const makingCharges = parseFloat(order.makingCharges || 0);
+        const actualWeight = parseFloat(order.actualWeight || order.grossWeight || 0);
+        const wastageG = parseFloat(order.wastageGrams || 0);
+        const wastagePercent = parseFloat(order.wastagePercent || order.wastage || 0);
+        const goldRate = parseFloat(order.goldRate || 0);
+        
+        // Calculate GST amount
+        const metalCost = actualWeight * goldRate;
+        const wastageCost = wastageG * goldRate;
+        const subtotal = metalCost + wastageCost + makingCharges;
+        const gstAmount = (subtotal * gstPercent) / 100;
+        
+        const orderDate = new Date(order.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        
+        return `
+            <tr class="hover:bg-surface-container-high/50">
+                <td class="py-3 px-4 font-bold text-primary">#${order.id}</td>
+                <td class="py-3 px-4">${orderDate}</td>
+                <td class="py-3 px-4">
+                    <p class="font-semibold">${order.jewelryType}</p>
+                    <p class="text-xs text-outline">${order.category || ''}</p>
+                    <p class="text-xs text-outline">${order.metalType} ${order.purity}</p>
+                </td>
+                <td class="py-3 px-4 text-right font-semibold">${actualWeight.toFixed(3)}g</td>
+                <td class="py-3 px-4 text-right">${wastageG.toFixed(3)}g</td>
+                <td class="py-3 px-4 text-right">${wastagePercent.toFixed(2)}%</td>
+                <td class="py-3 px-4 text-right">${formatCurrency(goldRate)}</td>
+                <td class="py-3 px-4 text-right">${formatCurrency(makingCharges)}</td>
+                <td class="py-3 px-4 text-right">${gstPercent.toFixed(1)}%</td>
+                <td class="py-3 px-4 text-right">${formatCurrency(gstAmount)}</td>
+                <td class="py-3 px-4 text-right font-bold text-primary">${formatCurrency(totalPrice)}</td>
+                <td class="py-3 px-4 text-right text-emerald-600 font-bold">${formatCurrency(totalPaid)}</td>
+                <td class="py-3 px-4 text-right ${outstanding > 0 ? 'text-error' : 'text-emerald-600'} font-bold text-lg">${formatCurrency(outstanding)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Toggle customer detail accordion
+function toggleCustomerDetail(customerId) {
+    const detailRow = document.getElementById(`detail-row-${customerId}`);
+    const icon = document.getElementById(`icon-${customerId}`);
+    
+    if (detailRow.classList.contains('hidden')) {
+        // Close all other detail rows
+        document.querySelectorAll('.customer-detail-row').forEach(row => {
+            row.classList.add('hidden');
+        });
+        document.querySelectorAll('.customer-expand-icon').forEach(ic => {
+            ic.textContent = 'chevron_right';
+        });
+        
+        // Open this detail row
+        detailRow.classList.remove('hidden');
+        icon.textContent = 'expand_more';
+    } else {
+        // Close this detail row
+        detailRow.classList.add('hidden');
+        icon.textContent = 'chevron_right';
+    }
+}
+
+// Clear filters
+function clearReportFilters() {
+    document.getElementById('report-start-customer').value = '';
+    document.getElementById('report-end-customer').value = '';
+    document.getElementById('report-summary-section').style.display = 'none';
+    document.getElementById('report-detail-section').style.display = 'none';
+    reportData = [];
+}
+reportData = [];
+    
+    // Close all expanded details
+    document.querySelectorAll('.customer-detail-row').forEach(row => {
+        row.classList.add('hidden');
+    });
+    document.querySelectorAll('.customer-expand-icon').forEach(icon => {
+        icon.textContent = 'chevron_right';
+    })
+function printOutstandingReport(type) {
+    window.print();
+}
+
+// Export to Excel (placeholder)
+function exportReportToExcel() {
+    showCustomAlert('Excel export feature coming soon!', 'info');
+}
+
+// Initialize when page loads
+window.addEventListener('pageLoaded', async (e) => {
+    if (e.detail.route === 'customer-outstanding-report') {
+        await loadCustomersForReport();
+    }
+});
+</script>
+
+<style>
+/* Accordion Animation */
+.customer-detail-row {
+    transition: all 0.3s ease-in-out;
+}
+
+.customer-expand-icon {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #report-summary-section, #report-summary-section * {
+        visibility: visible;
+    }
+    #report-summary-section {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    button {
+        display: none !important;
+    }
+    .customer-detail-row {
+        display: table-row !important;
+    }
+}
+</style>

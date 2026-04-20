@@ -1,0 +1,707 @@
+<!-- Workers/Craftsmen Management -->
+<section class="space-y-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
+        <div>
+            <h3 class="text-3xl font-bold serif-font text-on-surface">Craftsmen Registry</h3>
+            <p class="text-outline mt-1 font-body">Manage artisans and workforce.</p>
+        </div>
+        <button onclick="showAddWorkerModal()" class="px-6 py-3 golden-gradient text-white text-sm uppercase tracking-widest font-bold shadow-lg shadow-primary/20 flex items-center gap-2">
+            <span class="material-symbols-outlined">engineering</span>
+            Add Worker
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-surface-container-lowest p-6 flex flex-col sm:flex-row gap-4">
+        <div class="flex-1 relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+            <input type="text" id="worker-search" placeholder="Search by name or mobile..." 
+                class="w-full pl-12 pr-4 py-3 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary">
+        </div>
+        <select id="worker-type-filter" class="px-4 py-3 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary">
+            <option value="all">All Types</option>
+            <option value="Internal">Internal</option>
+            <option value="External">External</option>
+        </select>
+        <select id="worker-status-filter" class="px-4 py-3 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+    </div>
+
+    <!-- Workers Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="workers-grid">
+        <div class="col-span-full flex items-center justify-center py-12">
+            <span class="material-symbols-outlined text-4xl text-outline animate-spin">progress_activity</span>
+        </div>
+    </div>
+</section>
+
+<!-- Add/Edit Worker Modal -->
+<div id="worker-modal" class="fixed inset-0 bg-black/50 z-[100] hidden items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-xl max-w-2xl w-full">
+        <div class="sticky top-0 bg-surface-container-low px-8 py-6 border-b border-outline-variant/10 flex items-center justify-between">
+            <h3 class="text-2xl font-bold serif-font text-on-surface" id="worker-modal-title">Add New Worker</h3>
+            <button type="button" onclick="hideWorkerModal()" class="p-2 hover:bg-surface-container-low rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-outline">close</span>
+            </button>
+        </div>
+        <form id="worker-form" class="p-8 space-y-6">
+            <input type="hidden" id="worker-id">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-primary uppercase tracking-wider mb-2">Worker Name *</label>
+                    <input type="text" id="worker-name" required class="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-primary uppercase tracking-wider mb-2">Mobile Number *</label>
+                    <input type="tel" id="worker-mobile" required pattern="[0-9]{10}" maxlength="10" autocomplete="tel" class="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-lg">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold text-primary uppercase tracking-wider mb-2">Worker Type *</label>
+                <select id="worker-type" required class="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-lg">
+                    <option value="Internal">Internal</option>
+                    <option value="External" selected>External (Craftsman with Login)</option>
+                </select>
+            </div>
+
+            <!-- Password field for External workers -->
+            <div id="password-field" class="hidden">
+                <label class="block text-sm font-bold text-primary uppercase tracking-wider mb-2">
+                    Login Password *
+                    <span class="text-xs text-outline normal-case">(For craftsman portal access)</span>
+                </label>
+                <div class="relative">
+                    <input type="password" id="worker-password" autocomplete="new-password" class="w-full px-4 py-3 pr-12 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-lg">
+                    <button type="button" id="password-toggle-btn" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary">
+                        <span class="material-symbols-outlined" id="password-toggle-icon">visibility</span>
+                    </button>
+                </div>
+                <p class="text-xs text-outline mt-1">Craftsman will use mobile number and this password to login</p>
+            </div>
+
+            <!-- Active Status Toggle -->
+            <div class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg">
+                <div>
+                    <label class="block text-sm font-bold text-primary uppercase tracking-wider">Account Status</label>
+                    <p class="text-xs text-outline mt-1">Enable or disable craftsman login access</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="worker-active" class="sr-only peer" checked>
+                    <div class="w-14 h-7 bg-gray-300 peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+                    <span class="ml-3 text-sm font-bold" id="status-label">Active</span>
+                </label>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <button type="submit" class="flex-1 px-6 py-3 golden-gradient text-white text-sm uppercase tracking-widest font-bold">
+                    Save Worker
+                </button>
+                <button type="button" onclick="hideWorkerModal()" class="flex-1 px-6 py-3 border-2 border-outline-variant text-sm uppercase tracking-widest font-bold hover:bg-surface-container-low">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="fixed inset-0 bg-black/50 z-[100] hidden items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-xl max-w-md w-full">
+        <div class="sticky top-0 bg-error/10 px-8 py-6 border-b border-error/20">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-error text-3xl">warning</span>
+                <h3 class="text-2xl font-bold serif-font text-error">Delete Confirmation</h3>
+            </div>
+        </div>
+        <div class="p-8 space-y-6">
+            <p class="text-on-surface text-lg">Are you sure you want to delete <strong id="delete-worker-name"></strong>?</p>
+            <p class="text-outline text-sm">This action cannot be undone and will remove all associated data.</p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <button id="delete-confirm-btn" onclick="confirmDelete()" class="flex-1 px-6 py-3 bg-error text-white text-sm uppercase tracking-widest font-bold flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">delete</span>
+                    Delete
+                </button>
+                <button type="button" onclick="hideDeleteModal()" class="flex-1 px-6 py-3 border-2 border-outline-variant text-sm uppercase tracking-widest font-bold hover:bg-surface-container-low">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Alert Modal -->
+<div id="custom-alert-modal" class="fixed inset-0 bg-black/50 z-[110] hidden items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-xl max-w-md w-full transform transition-all">
+        <div class="p-6">
+            <div class="flex items-start gap-4">
+                <div id="alert-icon-container" class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl" id="alert-icon">info</span>
+                </div>
+                <div class="flex-1">
+                    <h3 id="alert-title" class="text-lg font-bold text-on-surface mb-2">Alert</h3>
+                    <p id="alert-message" class="text-on-surface-variant text-sm whitespace-pre-line">Message</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button type="button" onclick="hideCustomAlert()" id="alert-ok-btn" class="px-6 py-2.5 rounded-lg font-bold transition-colors">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Custom Confirm Dialog
+function showConfirmDialog(title, message) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4';
+        modal.innerHTML = `
+            <div class="bg-surface-container-lowest rounded-xl max-w-md w-full animate-scale-in">
+                <div class="bg-primary px-8 py-6 rounded-t-xl">
+                    <h3 class="text-xl font-bold text-white">${title}</h3>
+                </div>
+                <div class="p-8">
+                    <p class="text-on-surface whitespace-pre-wrap">${message}</p>
+                </div>
+                <div class="flex gap-4 p-6 border-t border-outline-variant/20">
+                    <button class="flex-1 px-6 py-3 border-2 border-outline-variant hover:bg-surface-container-low rounded-lg font-bold transition-colors cancel-btn">
+                        Cancel
+                    </button>
+                    <button class="flex-1 px-6 py-3 bg-primary hover:bg-primary-container text-white rounded-lg font-bold transition-colors confirm-btn">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        modal.querySelector('.cancel-btn').onclick = () => {
+            modal.remove();
+            resolve(false);
+        };
+        modal.querySelector('.confirm-btn').onclick = () => {
+            modal.remove();
+            resolve(true);
+        };
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.remove();
+                resolve(false);
+            }
+        };
+        
+        document.body.appendChild(modal);
+    });
+}
+
+// Make functions globally accessible
+let allWorkers = [];
+let deleteWorkerId = null;
+let deleteWorkerName = '';
+
+// Initialize when page loads
+window.addEventListener('pageLoaded', async (e) => {
+    if (e.detail.route === 'workers') {
+        await loadWorkers();
+        setupWorkerFilters();
+        setupWorkerFormHandler();
+        
+        // Setup password visibility toggle listener
+        const passwordToggleBtn = document.getElementById('password-toggle-btn');
+        if (passwordToggleBtn) {
+            passwordToggleBtn.addEventListener('click', togglePasswordVisibility);
+        }
+        
+        // Setup active status toggle listener
+        const activeToggle = document.getElementById('worker-active');
+        if (activeToggle) {
+            activeToggle.addEventListener('change', (e) => {
+                document.getElementById('status-label').textContent = e.target.checked ? 'Active' : 'Inactive';
+            });
+        }
+    }
+});
+
+async function loadWorkers() {
+    try {
+        const data = await apiRequest(`${API_BASE_URL}/Workers?includeInactive=true`);
+        allWorkers = data || [];
+        renderWorkers(allWorkers);
+    } catch (error) {
+        console.error('Error loading workers:', error);
+        document.getElementById('workers-grid').innerHTML = `
+            <div class="col-span-full text-center py-12 text-error">
+                <span class="material-symbols-outlined text-4xl">error</span>
+                <p class="mt-2">Failed to load workers</p>
+            </div>`;
+    }
+}
+
+function renderWorkers(workers) {
+    const grid = document.getElementById('workers-grid');
+    
+    if (!workers || workers.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full text-center py-12 text-outline">
+                <span class="material-symbols-outlined text-4xl">engineering</span>
+                <p class="mt-2">No workers found</p>
+            </div>`;
+        return;
+    }
+    
+    grid.innerHTML = workers.map(w => {
+        const initials = w.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        const typeColor = w.workerType === 'Internal' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
+        
+        return `
+            <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 hover:shadow-lg transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-16 h-16 rounded-full bg-primary-fixed-dim flex items-center justify-center text-lg font-bold text-on-primary-fixed">
+                        ${initials}
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${w.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-error/10 text-error'}">
+                        ${w.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                </div>
+                
+                <h4 class="text-lg font-bold serif-font text-on-surface mb-1">${w.name}</h4>
+                <p class="text-sm text-outline mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">call</span>
+                    ${w.mobile}
+                </p>
+                
+                <div class="flex items-center justify-between pt-3 border-t border-outline-variant/10">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${typeColor}">
+                        ${w.workerType}
+                    </span>
+                    <div class="flex gap-2">
+                        <button onclick="editWorker(${w.id})" class="p-2 hover:bg-surface-container-low rounded-lg" title="Edit">
+                            <span class="material-symbols-outlined text-primary">edit</span>
+                        </button>
+                        <button onclick="toggleWorkerStatus(${w.id}, ${!w.isActive})" class="p-2 hover:bg-surface-container-low rounded-lg" title="${w.isActive ? 'Deactivate' : 'Activate'}">
+                            <span class="material-symbols-outlined ${w.isActive ? 'text-error' : 'text-green-600'}">${w.isActive ? 'block' : 'check_circle'}</span>
+                        </button>
+                        <button onclick='deleteWorker(${w.id}, ${JSON.stringify(w.name)})' class="p-2 hover:bg-error/10 rounded-lg" title="Delete">
+                            <span class="material-symbols-outlined text-error">delete</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function setupWorkerFilters() {
+    const searchInput = document.getElementById('worker-search');
+    const typeFilter = document.getElementById('worker-type-filter');
+    const statusFilter = document.getElementById('worker-status-filter');
+    
+    const applyFilters = () => {
+        const search = searchInput.value.toLowerCase();
+        const type = typeFilter.value;
+        const status = statusFilter.value;
+        
+        let filtered = allWorkers;
+        
+        if (search) {
+            filtered = filtered.filter(w => 
+                w.name.toLowerCase().includes(search) || 
+                w.mobile.includes(search)
+            );
+        }
+        
+        if (type !== 'all') {
+            filtered = filtered.filter(w => w.workerType === type);
+        }
+        
+        if (status !== 'all') {
+            filtered = filtered.filter(w => 
+                status === 'active' ? w.isActive : !w.isActive
+            );
+        }
+        
+        renderWorkers(filtered);
+    };
+    
+    searchInput.addEventListener('input', applyFilters);
+    typeFilter.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+}
+
+function showAddWorkerModal() {
+    document.getElementById('worker-modal-title').textContent = 'Add New Worker';
+    document.getElementById('worker-form').reset();
+    document.getElementById('worker-id').value = '';
+    
+    // Enable mobile number field for adding
+    const mobileInput = document.getElementById('worker-mobile');
+    if (mobileInput) {
+        mobileInput.removeAttribute('readonly');
+        mobileInput.classList.remove('bg-gray-200', 'cursor-not-allowed');
+    }
+    
+    // Setup worker type listener
+    const workerTypeSelect = document.getElementById('worker-type');
+    if (workerTypeSelect) {
+        // Remove existing listener if any by cloning
+        const newSelect = workerTypeSelect.cloneNode(true);
+        workerTypeSelect.parentNode.replaceChild(newSelect, workerTypeSelect);
+        
+        // Add fresh change listener
+        newSelect.addEventListener('change', function() {
+            const passwordField = document.getElementById('password-field');
+            const passwordInput = document.getElementById('worker-password');
+            
+            console.log('Worker type changed to:', this.value);
+            
+            if (this.value === 'External') {
+                console.log('Showing password field');
+                passwordField.classList.remove('hidden');
+                passwordInput.required = true;
+                passwordInput.placeholder = 'Enter login password';
+            } else {
+                console.log('Hiding password field');
+                passwordField.classList.add('hidden');
+                passwordInput.required = false;
+                passwordInput.value = '';
+            }
+        });
+        
+        // Set default to External AFTER listener is attached
+        newSelect.value = 'External';
+    }
+    
+    // Set other default values
+    document.getElementById('worker-active').checked = true;
+    document.getElementById('status-label').textContent = 'Active';
+    
+    // Show password field for External type (default)
+    const passwordField = document.getElementById('password-field');
+    const passwordInput = document.getElementById('worker-password');
+    if (passwordField) {
+        passwordField.classList.remove('hidden');
+        if (passwordInput) {
+            passwordInput.required = true;
+            passwordInput.placeholder = 'Enter login password';
+        }
+    }
+    
+    document.getElementById('worker-modal').classList.remove('hidden');
+    document.getElementById('worker-modal').classList.add('flex');
+}
+
+function hideWorkerModal() {
+    document.getElementById('worker-modal').classList.add('hidden');
+    document.getElementById('worker-modal').classList.remove('flex');
+}
+
+function togglePasswordField() {
+    const workerType = document.getElementById('worker-type')?.value;
+    const passwordField = document.getElementById('password-field');
+    const passwordInput = document.getElementById('worker-password');
+    
+    console.log('Toggle password field called. Type:', workerType);
+    
+    if (!passwordField || !passwordInput) {
+        console.error('Password field elements not found');
+        return;
+    }
+    
+    if (workerType === 'External') {
+        console.log('Showing password field');
+        passwordField.classList.remove('hidden');
+        passwordInput.required = true;
+    } else {
+        console.log('Hiding password field');
+        passwordField.classList.add('hidden');
+        passwordInput.required = false;
+        passwordInput.value = '';
+    }
+}
+
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('worker-password');
+    const toggleIcon = document.getElementById('password-toggle-icon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.textContent = 'visibility_off';
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.textContent = 'visibility';
+    }
+}
+
+async function editWorker(id) {
+    try {
+        const worker = await apiRequest(`${API_BASE_URL}/Workers/${id}`);
+        document.getElementById('worker-modal-title').textContent = 'Edit Worker';
+        document.getElementById('worker-id').value = worker.id;
+        document.getElementById('worker-name').value = worker.name;
+        document.getElementById('worker-mobile').value = worker.mobile;
+        document.getElementById('worker-type').value = worker.workerType;
+        document.getElementById('worker-active').checked = worker.isActive;
+        document.getElementById('status-label').textContent = worker.isActive ? 'Active' : 'Inactive';
+        
+        // Make mobile number readonly when editing
+        const mobileInput = document.getElementById('worker-mobile');
+        if (mobileInput) {
+            mobileInput.setAttribute('readonly', true);
+            mobileInput.classList.add('bg-gray-200', 'cursor-not-allowed');
+        }
+        
+        // Show/hide password field based on type
+        const passwordField = document.getElementById('password-field');
+        const passwordInput = document.getElementById('worker-password');
+        
+        if (worker.workerType === 'External') {
+            passwordField.classList.remove('hidden');
+            passwordInput.required = false; // Not required on edit unless changing password
+            passwordInput.placeholder = 'Leave blank to keep current password';
+        } else {
+            passwordField.classList.add('hidden');
+            passwordInput.required = false;
+        }
+        
+        // Setup worker type listener when modal opens
+        const workerTypeSelect = document.getElementById('worker-type');
+        if (workerTypeSelect) {
+            // Remove existing listener if any
+            const newSelect = workerTypeSelect.cloneNode(true);
+            workerTypeSelect.parentNode.replaceChild(newSelect, workerTypeSelect);
+            
+            // Restore the selected value after cloning
+            newSelect.value = worker.workerType;
+            
+            // Add fresh listener
+            newSelect.addEventListener('change', function() {
+                const passwordField = document.getElementById('password-field');
+                const passwordInput = document.getElementById('worker-password');
+                
+                console.log('Worker type changed to:', this.value);
+                
+                if (this.value === 'External') {
+                    console.log('Showing password field');
+                    passwordField.classList.remove('hidden');
+                    passwordInput.required = false;
+                    passwordInput.placeholder = 'Leave blank to keep current password';
+                } else {
+                    console.log('Hiding password field');
+                    passwordField.classList.add('hidden');
+                    passwordInput.required = false;
+                    passwordInput.value = '';
+                }
+            });
+        }
+        
+        document.getElementById('worker-modal').classList.remove('hidden');
+        document.getElementById('worker-modal').classList.add('flex');
+    } catch (error) {
+        console.error('Error loading worker:', error);
+    }
+}
+
+window.togglePasswordField = togglePasswordField;
+window.togglePasswordVisibility = togglePasswordVisibility;
+window.toggleWorkerStatus = toggleWorkerStatus;
+window.deleteWorker = deleteWorker;
+
+async function toggleWorkerStatus(id, newStatus) {
+    const action = newStatus ? 'activate' : 'deactivate';
+    const confirmed = await showConfirmDialog(
+        `${action.charAt(0).toUpperCase() + action.slice(1)} Worker?`,
+        `Are you sure you want to ${action} this worker? ${newStatus ? 'They will be able to login.' : 'They will not be able to login.'}`
+    );
+    if (!confirmed) {
+        return;
+    }
+    
+    try {
+        await apiRequest(`${API_BASE_URL}/Workers/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ isActive: newStatus })
+        });
+        await loadWorkers();
+    } catch (error) {
+        console.error('Error updating worker status:', error);
+        showToast('Failed to update worker status. Please try again.', 'error');
+    }
+}
+
+async function deleteWorker(id, name) {
+    // Show custom delete confirmation modal
+    deleteWorkerId = id;
+    deleteWorkerName = name;
+    document.getElementById('delete-worker-name').textContent = name;
+    showDeleteModal();
+}
+
+function showDeleteModal() {
+    const modal = document.getElementById('delete-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function hideDeleteModal() {
+    const modal = document.getElementById('delete-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    deleteWorkerId = null;
+    deleteWorkerName = '';
+}
+
+async function confirmDelete() {
+    const btn = document.getElementById('delete-confirm-btn');
+    if (btn.disabled) return;
+    
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Deleting...';
+        
+        await apiRequest(`${API_BASE_URL}/Workers/${deleteWorkerId}`, {
+            method: 'DELETE'
+        });
+        
+        hideDeleteModal();
+        
+        // Show success message
+        showNotification(`✅ ${deleteWorkerName} has been deleted successfully.`, 'success');
+        
+        await loadWorkers();
+    } catch (error) {
+        console.error('Error deleting worker:', error);
+        btn.disabled = false;
+        showNotification('❌ Failed to delete worker. Please try again.', 'error');
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Create a temporary notification
+    const notification = document.createElement('div');
+    notification.className = `fixed top-24 right-4 z-[200] px-6 py-4 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white font-bold animate-slide-in-right`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+function viewWorkerTasks(id) {
+    showToast(`View tasks for worker #${id} - to be implemented`, 'info');
+}
+
+function setupWorkerFormHandler() {
+    const form = document.getElementById('worker-form');
+    if (!form) return;
+    
+    form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('worker-id').value;
+    const workerType = document.getElementById('worker-type').value;
+    const password = document.getElementById('worker-password').value;
+    
+    const data = {
+        name: document.getElementById('worker-name').value,
+        mobile: document.getElementById('worker-mobile').value,
+        workerType: workerType,
+        isActive: document.getElementById('worker-active').checked
+    };
+    
+    // Add password for External workers if provided
+    if (workerType === 'External' && password) {
+        data.password = password;
+    }
+    
+    try {
+        if (id) {
+            await apiRequest(`${API_BASE_URL}/Workers/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+            showCustomAlert('Worker updated successfully', 'success', '✅ Success');
+        } else {
+            await apiRequest(`${API_BASE_URL}/Workers`, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            showCustomAlert('Worker created successfully', 'success', '✅ Success');
+        }
+        
+        hideWorkerModal();
+        await loadWorkers();
+    } catch (error) {
+        console.error('Error saving worker:', error);
+        showToast('Failed to save worker: ' + (error.message || 'Unknown error'), 'error');
+    }
+    });
+}
+
+// Custom Alert Functions
+function showCustomAlert(message, type = 'info', title = null) {
+    const modal = document.getElementById('custom-alert-modal');
+    const iconContainer = document.getElementById('alert-icon-container');
+    const icon = document.getElementById('alert-icon');
+    const titleEl = document.getElementById('alert-title');
+    const messageEl = document.getElementById('alert-message');
+    const okBtn = document.getElementById('alert-ok-btn');
+    
+    // Set message
+    messageEl.textContent = message;
+    
+    // Set type-specific styles
+    if (type === 'success') {
+        titleEl.textContent = title || 'Success';
+        icon.textContent = 'check_circle';
+        iconContainer.className = 'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-green-100';
+        icon.className = 'material-symbols-outlined text-2xl text-green-600';
+        okBtn.className = 'px-6 py-2.5 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors';
+    } else if (type === 'error') {
+        titleEl.textContent = title || 'Error';
+        icon.textContent = 'error';
+        iconContainer.className = 'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-red-100';
+        icon.className = 'material-symbols-outlined text-2xl text-red-600';
+        okBtn.className = 'px-6 py-2.5 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors';
+    } else if (type === 'warning') {
+        titleEl.textContent = title || 'Warning';
+        icon.textContent = 'warning';
+        iconContainer.className = 'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-orange-100';
+        icon.className = 'material-symbols-outlined text-2xl text-orange-600';
+        okBtn.className = 'px-6 py-2.5 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition-colors';
+    } else { // info
+        titleEl.textContent = title || 'Information';
+        icon.textContent = 'info';
+        iconContainer.className = 'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-blue-100';
+        icon.className = 'material-symbols-outlined text-2xl text-blue-600';
+        okBtn.className = 'px-6 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors';
+    }
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    // Focus OK button
+    setTimeout(() => okBtn.focus(), 100);
+}
+
+function hideCustomAlert() {
+    const modal = document.getElementById('custom-alert-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// Make functions available globally
+window.showAddWorkerModal = showAddWorkerModal;
+window.hideWorkerModal = hideWorkerModal;
+window.editWorker = editWorker;
+window.viewWorkerTasks = viewWorkerTasks;
+</script>
