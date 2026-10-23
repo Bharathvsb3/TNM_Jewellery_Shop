@@ -129,6 +129,8 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
+app.UseStaticFiles(); // Serve uploaded profile photos from wwwroot
+
 app.UseAuthentication();
 app.UseAuthorization();
 

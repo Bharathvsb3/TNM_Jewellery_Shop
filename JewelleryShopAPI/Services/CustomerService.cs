@@ -13,6 +13,7 @@ namespace JewelleryShopAPI.Services
         Task<CustomerDTO?> CreateCustomerAsync(CreateCustomerRequest request);
         Task<CustomerDTO?> UpdateCustomerAsync(int id, UpdateCustomerRequest request);
         Task<bool> DeleteCustomerAsync(int id);
+        Task<bool> UpdateProfilePhotoAsync(int id, string? photoPath);
     }
 
     public class CustomerService : ICustomerService
@@ -152,6 +153,18 @@ namespace JewelleryShopAPI.Services
             return true;
         }
 
+        public async Task<bool> UpdateProfilePhotoAsync(int id, string? photoPath)
+        {
+            var customer = await _customerRepository.GetByIdAsync(id);
+            if (customer == null)
+                return false;
+
+            customer.ProfilePhoto = photoPath;
+            customer.UpdatedAt = DateTime.UtcNow;
+            await _customerRepository.UpdateAsync(customer);
+            return true;
+        }
+
         private async Task<CustomerDTO> MapToDTOAsync(Customer customer)
         {
             // Fetch associated user to get email and address
@@ -165,6 +178,7 @@ namespace JewelleryShopAPI.Services
                 Email = user?.Email,
                 Address = user?.Address,
                 Notes = customer.Notes,
+                ProfilePhoto = customer.ProfilePhoto,
                 DefaultWastage = customer.DefaultWastage,
                 DefaultGst = customer.DefaultGst,
                 IsActive = customer.IsActive,

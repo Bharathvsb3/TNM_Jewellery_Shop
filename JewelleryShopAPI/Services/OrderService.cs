@@ -11,6 +11,7 @@ namespace JewelleryShopAPI.Services
         Task<IEnumerable<OrderDTO>> GetOrdersByCustomerAsync(int customerId);
         Task<OrderDTO?> CreateOrderAsync(CreateOrderRequest request);
         Task<OrderDTO?> UpdateOrderAsync(int id, UpdateOrderRequest request);
+        Task<ExchangeOrderResponseDTO?> ExchangeOrderAsync(int originalOrderId, ExchangeOrderRequest request);
         
         // Customer Portal Methods
         Task<OrderDTO?> CreateCustomerOrderAsync(int userId, CustomerOrderRequest request);
@@ -536,6 +537,96 @@ namespace JewelleryShopAPI.Services
             return reportData.OrderBy(r => r.CustomerName);
         }
 
+        public async Task<ExchangeOrderResponseDTO?> ExchangeOrderAsync(int originalOrderId, ExchangeOrderRequest request)
+        {
+            var oldOrder = await _orderRepository.GetByIdAsync(originalOrderId);
+            if (oldOrder == null || oldOrder.Status != "Delivered")
+                return null;
+
+            // Calculate exchange credit:
+            // If ExchangeCreditOverride > 0, use that (= total paid by customer for wrong-item exchange)
+            // Otherwise fall back to metal value (weight × rate)
+            decimal oldItemWeight = oldOrder.ActualWeight ?? oldOrder.GrossWeight;
+            decimal metalValue = oldItemWeight * request.ExchangeRateForOldItem;
+            decimal exchangeCredit = request.ExchangeCreditOverride > 0
+                ? request.ExchangeCreditOverride
+                : metalValue;
+
+            // Calculate new item pricing
+            decimal newMetalCost = request.GrossWeight * request.ExchangeRateForNewItem;
+            decimal newWastageAmt = request.Wastage * request.ExchangeRateForNewItem;
+            decimal newSubtotal = newMetalCost + newWastageAmt + request.MakingCharges;
+            decimal newGstAmt = request.Gst > 0 ? (newSubtotal * request.Gst / 100) : 0;
+            decimal newTotalPrice = newSubtotal + newGstAmt;
+
+            // Advance for new order = exchange credit + any extra cash paid now
+            decimal totalAdvance = exchangeCredit + request.ExtraAdvancePaid;
+
+            // If old order had unpaid balance, customer must still settle it on the new order
+            decimal oldUnpaidBalance = request.OldOrderUnpaidBalance > 0 ? request.OldOrderUnpaidBalance : 0;
+
+            // Balance due on new order = new total + old unpaid balance - total advance
+            decimal balanceDue = newTotalPrice + oldUnpaidBalance - totalAdvance;
+
+            // Build exchange reference note for old order
+            string exchangeNote = $"[EXCHANGED on {DateTime.Now:dd/MM/yyyy}] → New item: {request.JewelryType} ({request.GrossWeight}g {request.MetalType} {request.Purity}). Old item credit: ₹{exchangeCredit:N2} ({oldItemWeight}g @ ₹{request.ExchangeRateForOldItem:N2}/g). {(oldUnpaidBalance > 0 ? $"Old balance carried forward: ₹{oldUnpaidBalance:N2}. " : "")}{request.Notes}".Trim();
+
+            // Mark old order with exchange reference and link to new order
+            oldOrder.DeliveryNotes = string.IsNullOrEmpty(oldOrder.DeliveryNotes)
+                ? exchangeNote
+                : $"{oldOrder.DeliveryNotes}\n{exchangeNote}";
+            // ExchangedToOrderId will be set after new order is created below
+            await _orderRepository.UpdateAsync(oldOrder);
+
+            // Create new order as Delivered with locked calculations
+            var newOrder = new Order
+            {
+                CustomerId = oldOrder.CustomerId,
+                JewelryType = request.JewelryType,
+                Category = string.IsNullOrEmpty(request.Category) ? request.JewelryType : request.Category,
+                MetalType = request.MetalType,
+                Purity = request.Purity,
+                GrossWeight = request.GrossWeight,
+                Wastage = request.Wastage,
+                MakingCharges = request.MakingCharges,
+                Gst = request.Gst,
+                StoneDetails = $"Exchanged from Order #{originalOrderId}",
+                EstimatedWeight = request.GrossWeight,
+                GoldRate = request.ExchangeRateForNewItem,
+                TotalPrice = newTotalPrice,
+                AdvanceAmount = totalAdvance,
+                BalanceAmount = balanceDue > 0 ? balanceDue : 0,
+                AdjustmentAmount = balanceDue < 0 ? balanceDue : 0,  // negative = shop owes refund
+                ActualWeight = request.GrossWeight,
+                WastageGrams = request.Wastage,
+                WastagePercent = request.GrossWeight > 0 ? (request.Wastage / request.GrossWeight * 100) : 0,
+                Status = "Pending",  // New order starts as Pending; shop delivers once item is made
+                OrderDate = DateTime.UtcNow,
+                DeliveryNotes = $"Exchange order. Credit from Order #{originalOrderId}: ₹{exchangeCredit:N2}. Extra advance paid: ₹{request.ExtraAdvancePaid:N2}.{(oldUnpaidBalance > 0 ? $" Old unpaid balance carried: ₹{oldUnpaidBalance:N2}." : "")} {request.Notes}".Trim()
+            };
+
+            await _orderRepository.CreateAsync(newOrder);
+            var createdNewOrder = await _orderRepository.GetByIdAsync(newOrder.Id);
+
+            // Now link old order to the new exchange order and mark it as Exchanged
+            oldOrder.ExchangedToOrderId = newOrder.Id;
+            oldOrder.Status = "Exchanged";
+            await _orderRepository.UpdateAsync(oldOrder);
+
+            return new ExchangeOrderResponseDTO
+            {
+                OriginalOrderId = originalOrderId,
+                NewOrderId = newOrder.Id,
+                OldItemWeight = oldItemWeight,
+                OldItemRate = request.ExchangeRateForOldItem,
+                ExchangeCredit = exchangeCredit,
+                NewItemTotal = newTotalPrice,
+                ExtraAdvancePaid = request.ExtraAdvancePaid,
+                BalanceDue = balanceDue,
+                NewOrder = MapToDTO(createdNewOrder!)
+            };
+        }
+
         private OrderDTO MapToDTO(Order order)
         {
             return new OrderDTO
@@ -575,7 +666,8 @@ namespace JewelleryShopAPI.Services
                 WastagePercent = order.WastagePercent,
                 AdjustmentAmount = order.AdjustmentAmount,
                 DeliveryNotes = order.DeliveryNotes,
-                DeliveryDate = order.DeliveryDate
+                DeliveryDate = order.DeliveryDate,
+                ExchangedToOrderId = order.ExchangedToOrderId
             };
         }
     }

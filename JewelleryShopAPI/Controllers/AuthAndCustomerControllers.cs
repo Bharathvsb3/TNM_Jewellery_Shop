@@ -77,10 +77,12 @@ namespace JewelleryShopAPI.Controllers
     public class CustomersController : ControllerBase
     {
         private readonly ICustomerService _customerService;
+        private readonly IWebHostEnvironment _environment;
 
-        public CustomersController(ICustomerService customerService)
+        public CustomersController(ICustomerService customerService, IWebHostEnvironment environment)
         {
             _customerService = customerService;
+            _environment = environment;
         }
 
         [HttpGet]
@@ -147,6 +149,69 @@ namespace JewelleryShopAPI.Controllers
             {
                 return StatusCode(500, new { message = "An error occurred while deleting the customer.", details = ex.Message });
             }
+        }
+
+        [HttpPost("{id}/photo")]
+        public async Task<IActionResult> UploadPhoto(int id, IFormFile photo)
+        {
+            if (photo == null || photo.Length == 0)
+                return BadRequest(new { message = "No photo provided" });
+
+            // Validate file type
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+            if (!allowedTypes.Contains(photo.ContentType.ToLower()))
+                return BadRequest(new { message = "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed." });
+
+            // Validate file size (max 5MB)
+            if (photo.Length > 5 * 1024 * 1024)
+                return BadRequest(new { message = "File size exceeds 5MB limit." });
+
+            var customer = await _customerService.GetCustomerByIdAsync(id);
+            if (customer == null)
+                return NotFound();
+
+            // Create uploads directory
+            var uploadsDir = Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads", "profiles");
+            Directory.CreateDirectory(uploadsDir);
+
+            // Generate unique filename
+            var extension = Path.GetExtension(photo.FileName).ToLower();
+            var fileName = $"customer_{id}_{DateTime.UtcNow.Ticks}{extension}";
+            var filePath = Path.Combine(uploadsDir, fileName);
+
+            // Save file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await photo.CopyToAsync(stream);
+            }
+
+            // Update customer profile photo path
+            var photoUrl = $"/uploads/profiles/{fileName}";
+            await _customerService.UpdateProfilePhotoAsync(id, photoUrl);
+
+            return Ok(new { profilePhoto = photoUrl });
+        }
+
+        [HttpDelete("{id}/photo")]
+        public async Task<IActionResult> DeletePhoto(int id)
+        {
+            var customer = await _customerService.GetCustomerByIdAsync(id);
+            if (customer == null)
+                return NotFound();
+
+            if (!string.IsNullOrEmpty(customer.ProfilePhoto))
+            {
+                // Delete file from disk
+                var filePath = Path.Combine(_environment.ContentRootPath, "wwwroot", customer.ProfilePhoto.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+
+                await _customerService.UpdateProfilePhotoAsync(id, null);
+            }
+
+            return Ok(new { message = "Profile photo removed" });
         }
     }
 

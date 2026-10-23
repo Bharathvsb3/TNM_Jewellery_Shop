@@ -59,6 +59,9 @@ namespace JewelleryShopAPI.Models
 
         public bool IsActive { get; set; } = true;
 
+        [MaxLength(500)]
+        public string? ProfilePhoto { get; set; } // Optional profile photo path
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
@@ -285,6 +288,9 @@ namespace JewelleryShopAPI.Models
         public string? DesignImage3 { get; set; }
         
         public DateTime? DeliveryDate { get; set; }
+
+        // Exchange tracking
+        public int? ExchangedToOrderId { get; set; }  // Set when this order is exchanged → points to new order
 
         public CraftAssignment? CraftAssignment { get; set; }
     }

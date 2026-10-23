@@ -34,6 +34,9 @@ namespace JewelleryShopAPI
                 // Migrate Customer Defaults
                 EnsureCustomerDefaultsExist(connection);
 
+                // Migrate Customer ProfilePhoto
+                EnsureCustomerProfilePhotoExists(connection);
+
                 Console.WriteLine("==========================================");
                 Console.WriteLine("All Database Migrations Completed!");
                 Console.WriteLine("==========================================\n");
@@ -281,6 +284,24 @@ namespace JewelleryShopAPI
                 {
                     Console.WriteLine($"  ✓ Column {column.Name} already exists");
                 }
+            }
+
+            Console.WriteLine();
+        }
+
+        private static void EnsureCustomerProfilePhotoExists(SqliteConnection connection)
+        {
+            Console.WriteLine("Checking Customer ProfilePhoto column...");
+
+            if (!ColumnExists(connection, "Customers", "ProfilePhoto"))
+            {
+                Console.WriteLine("  → Adding column: Customers.ProfilePhoto");
+                AddColumn(connection, "Customers", "ProfilePhoto", "TEXT");
+                Console.WriteLine("  ✓ Column ProfilePhoto added successfully");
+            }
+            else
+            {
+                Console.WriteLine("  ✓ Column ProfilePhoto already exists");
             }
 
             Console.WriteLine();

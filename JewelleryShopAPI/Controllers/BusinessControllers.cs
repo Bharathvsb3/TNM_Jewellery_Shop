@@ -83,6 +83,16 @@ namespace JewelleryShopAPI.Controllers
             var report = await _orderService.GetCustomerOutstandingReportAsync(request);
             return Ok(report);
         }
+
+        [HttpPost("{id}/exchange")]
+        public async Task<IActionResult> ExchangeOrder(int id, [FromBody] ExchangeOrderRequest request)
+        {
+            var result = await _orderService.ExchangeOrderAsync(id, request);
+            if (result == null)
+                return BadRequest(new { message = "Order not found or is not in Delivered status. Only delivered orders can be exchanged." });
+
+            return Ok(result);
+        }
     }
 
     [Authorize]

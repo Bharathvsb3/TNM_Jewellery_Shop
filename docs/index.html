@@ -3,126 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Jewellery Management</title>
-    <link rel="stylesheet" href="css/responsive-fix.css">
-    <link rel="stylesheet" href="css/premium-theme.css">
-    <link rel="stylesheet" href="css/login.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <title>API Tester</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f6f8;
+            color: #222;
+        }
+
+        .container {
+            width: 700px;
+            max-width: 95%;
+            margin: 40px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .field {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d5d8dc;
+            border-radius: 7px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #4a7cff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px 12px;
+            background: #f1f5f9;
+            border-radius: 7px;
+            font-weight: 600;
+        }
+
+        .response-title {
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+            resize: vertical;
+            padding: 12px;
+            border: 1px solid #d5d8dc;
+            border-radius: 7px;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            background: #111827;
+            color: #fff;
+        }
+    </style>
 </head>
+
 <body>
-    <!-- Main Layout -->
-    <main class="login-wrapper">
-        <!-- Left Side - Hero Section (Desktop/Tablet Only) -->
-        <section class="hero-section">
-            <img class="hero-image" src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1200&q=80" alt="Luxury Jewellery Collection">
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-                <span class="hero-subtitle" id="shop-tagline">Legacy of Excellence</span>
-                <h1 class="hero-title" id="shop-name-hero">T.N. Mani Gopi Jewellers</h1>
-                <p class="hero-description" id="shop-description">
-                    Every piece in our atelier is a testament to four decades of uncompromising artistry and the pursuit of absolute brilliance.
-                </p>
-                <div class="hero-divider"></div>
-            </div>
-            <div class="hero-testimonials">
-                <div class="testimonial-images">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Client">
-                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" alt="Client">
-                </div>
-                <p class="testimonial-text">Trusted by elite curators</p>
-            </div>
-        </section>
 
-        <!-- Right Side - Login Form -->
-        <section class="form-section">
-            <!-- Mobile Logo -->
-            <div class="mobile-logo">
-                <span class="material-symbols-outlined">diamond</span>
-                <span class="mobile-logo-text" id="shop-name-mobile">JMW</span>
-            </div>
+<div class="container">
 
-            <div class="form-container">
-                <!-- Welcome Header -->
-                <div class="welcome-header">
-                    <h2 class="welcome-title">Welcome Back</h2>
-                    <p class="welcome-subtitle"><span class="highlight">Sign in</span> to access your jewelry collection</p>
-                </div>
+    <h2>Mobile License API Tester</h2>
 
-                <!-- Login Form -->
-                <form id="login-form" class="login-form">
-                    <div class="form-group">
-                        <label for="email-phone">EMAIL OR PHONE</label>
-                        <div class="input-wrapper">
-                            <input type="text" 
-                                   id="email-phone" 
-                                   class="form-input"
-                                   placeholder="Enter your email or phone" 
-                                   autocomplete="username"
-                                   required>
-                            <div class="input-underline"></div>
-                        </div>
-                    </div>
+    <div class="field">
+        <label>API URL</label>
+        <input
+            type="text"
+            id="url"
+            value="https://licensingapi.silvercreek.com/api/Licensing/MobileLicenseActivation">
+    </div>
 
-                    <div class="form-group">
-                        <div class="label-row">
-                            <label for="password">PASSWORD</label>
-                            <a href="#" class="forgot-link">FORGOT?</a>
-                        </div>
-                        <div class="input-wrapper">
-                            <input type="password" 
-                                   id="password" 
-                                   class="form-input"
-                                   placeholder="••••••••" 
-                                   autocomplete="current-password"
-                                   required>
-                            <div class="input-underline"></div>
-                        </div>
-                    </div>
+    <div class="field">
+        <label>Client Code</label>
+        <input type="text" id="clientCode" value="STR">
+    </div>
 
-                    <div class="remember-me">
-                        <input type="checkbox" id="remember" class="remember-checkbox">
-                        <label for="remember" class="remember-label">REMEMBER ME</label>
-                    </div>
+    <div class="field">
+        <label>Application Code</label>
+        <input type="text" id="applicationCode" value="WMS">
+    </div>
 
-                    <button type="submit" class="btn-submit">
-                        <span class="btn-text">AUTHORIZE ACCESS</span>
-                        <span class="btn-icon"><span class="material-symbols-outlined">arrow_forward</span></span>
-                        <span class="btn-loader" style="display:none;">
-                            <i class="fas fa-spinner fa-spin"></i>
-                        </span>
-                    </button>
+    <div class="field">
+        <label>Device ID</label>
+        <input type="text" id="deviceId" placeholder="Enter Device ID">
+    </div>
 
-                    <p class="error-message" id="error-message"></p>
-                </form>
+    <div class="field">
+        <label>Device Name</label>
+        <input type="text" id="deviceName" placeholder="Enter Device Name">
+    </div>
 
-                <!-- Register Link -->
-                <div class="register-section">
-                    <p>New to the collection?</p>
-                    <a href="register.html" class="register-link">Create Account</a>
-                </div>
-            </div>
+    <div class="field">
+        <label>Device Type</label>
+        <input type="text" id="deviceType" value="Android">
+    </div>
 
-            <!-- Footer -->
-            <footer class="form-footer">
-                <p class="footer-copyright" id="footer-copyright">© 2026 T.N. Mani Gopi Jewellers</p>
-                <div class="footer-links">
-                    <a href="#">Privacy</a>
-                    <a href="#">Support</a>
-                </div>
-            </footer>
-        </section>
-    </main>
-
-    <!-- Support Button -->
-    <button class="support-btn" title="Customer Support">
-        <span class="material-symbols-outlined">support_agent</span>
+    <button id="runBtn" onclick="callApi()">
+        Run API
     </button>
 
-    <script src="js/config.js"></script>
-    <script src="js/login.js"></script>
+    <div class="status" id="status">
+        Status: Not executed
+    </div>
+
+    <div class="response-title">
+        API Response
+    </div>
+
+    <textarea id="response" readonly></textarea>
+
+</div>
+
+<script>
+async function callApi() {
+
+    const button = document.getElementById("runBtn");
+    const status = document.getElementById("status");
+    const responseBox = document.getElementById("response");
+
+    const url = document.getElementById("url").value.trim();
+
+    const requestData = {
+        ClientCode: document.getElementById("clientCode").value.trim(),
+        ApplicationCode: document.getElementById("applicationCode").value.trim(),
+        DeviceId: document.getElementById("deviceId").value.trim(),
+        DeviceName: document.getElementById("deviceName").value.trim(),
+        DeviceType: document.getElementById("deviceType").value.trim()
+    };
+
+    button.disabled = true;
+    button.innerText = "Calling API...";
+    status.innerText = "Status: Calling...";
+    responseBox.value = "";
+
+    try {
+
+        const response = await fetch(url, {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(requestData)
+        });
+
+        const text = await response.text();
+
+        status.innerText =
+            `Status: ${response.status} ${response.statusText}`;
+
+        try {
+            const json = JSON.parse(text);
+
+            responseBox.value =
+                JSON.stringify(json, null, 4);
+
+        } catch {
+            responseBox.value = text;
+        }
+
+    } catch (error) {
+
+        status.innerText = "Status: Request Failed";
+
+        responseBox.value =
+            error.message;
+    }
+
+    button.disabled = false;
+    button.innerText = "Run API";
+}
+</script>
+
 </body>
 </html>

@@ -8,6 +8,7 @@ namespace JewelleryShopAPI.DTOs
         public string? Email { get; set; }
         public string? Address { get; set; }
         public string? Notes { get; set; }
+        public string? ProfilePhoto { get; set; }
         public decimal DefaultWastage { get; set; }
         public decimal DefaultGst { get; set; }
         public bool IsActive { get; set; }

@@ -82,3 +82,8 @@ WEBSOCKET_*.md
 DatabaseMigration/
 RunMaterialReturnsMigration.cs
 migrate-returns.ps1
+
+# Publish output, production secrets, user uploads
+JewelleryShopAPI/publish/
+JewelleryShopAPI/appsettings.Production.json
+JewelleryShopAPI/wwwroot/uploads/

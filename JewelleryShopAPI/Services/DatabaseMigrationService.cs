@@ -51,6 +51,7 @@ namespace JewelleryShopAPI.Services
                 await AddColumnIfNotExists(connection, "Orders", "AdjustmentAmount", "REAL NULL");
                 await AddColumnIfNotExists(connection, "Orders", "DeliveryNotes", "TEXT NULL");
                 await AddColumnIfNotExists(connection, "Orders", "DeliveryDate", "TEXT NULL");
+                await AddColumnIfNotExists(connection, "Orders", "ExchangedToOrderId", "INTEGER NULL");
 
                 // Create GoldDispatches table if not exists
                 await CreateGoldDispatchesTableIfNotExists(connection);

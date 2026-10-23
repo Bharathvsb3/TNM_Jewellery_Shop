@@ -38,6 +38,7 @@ namespace JewelleryShopAPI.DTOs
         public decimal? AdjustmentAmount { get; set; }
         public string? DeliveryNotes { get; set; }
         public DateTime? DeliveryDate { get; set; }
+        public int? ExchangedToOrderId { get; set; }  // non-null if this order was exchanged
     }
 
     public class CreateOrderRequest
@@ -146,5 +147,41 @@ namespace JewelleryShopAPI.DTOs
     {
         public int? StartCustomerId { get; set; }
         public int? EndCustomerId { get; set; }
+    }
+
+    public class ExchangeOrderRequest
+    {
+        // New item details
+        public string JewelryType { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string MetalType { get; set; } = "Gold";
+        public string Purity { get; set; } = "916";
+        public decimal GrossWeight { get; set; }
+        public decimal Wastage { get; set; }       // Wastage in grams
+        public decimal MakingCharges { get; set; }
+        public decimal Gst { get; set; }
+
+        // Exchange payment info
+        public decimal ExtraAdvancePaid { get; set; } // Cash paid by customer at exchange (above exchange credit)
+        public decimal OldOrderUnpaidBalance { get; set; } // Any remaining balance the customer hadn't paid on the old order
+        public string? Notes { get; set; }
+
+        // Locked rates passed from frontend (today's rate at time of exchange)
+        public decimal ExchangeRateForOldItem { get; set; }   // Rate used to value old item (today's rate for old purity)
+        public decimal ExchangeRateForNewItem { get; set; }   // Rate used to price new item (today's rate for new purity)
+        public decimal ExchangeCreditOverride { get; set; }   // If > 0, use this as exchange credit (e.g. total amount paid by customer)
+    }
+
+    public class ExchangeOrderResponseDTO
+    {
+        public int OriginalOrderId { get; set; }
+        public int NewOrderId { get; set; }
+        public decimal OldItemWeight { get; set; }
+        public decimal OldItemRate { get; set; }
+        public decimal ExchangeCredit { get; set; }       // Old item value credited
+        public decimal NewItemTotal { get; set; }         // Full cost of new item
+        public decimal ExtraAdvancePaid { get; set; }     // Cash paid at exchange
+        public decimal BalanceDue { get; set; }           // Net balance customer still owes (positive = customer pays, negative = shop refunds)
+        public OrderDTO NewOrder { get; set; } = null!;
     }
 }
